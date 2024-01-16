@@ -38,7 +38,7 @@ describe("GhoSafe", () => {
 
   it.only("Should be able to send all approved tokens", async () => {
     const [, user2] = await ethers.getSigners()
-    const wallet = new Wallet("0xe2b179d840395d4331542e596fdbe4d26f23d8058b48249aa857898e7efd558e")
+    const wallet = new Wallet("0xe2b179d84039124331532e596fdbe2d26f23d8058b48249aa85789817efd558e")
 
     //@ts-ignore
 
