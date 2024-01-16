@@ -11,13 +11,6 @@ import { NetworksUserConfig } from "hardhat/types"
 import "solidity-coverage"
 import { config } from "./package.json"
 import KEYS from "./private.json"
-import "./tasks/deploy-box"
-import "./tasks/deploy-box-v2"
-import "./tasks/deploy-token"
-import "./tasks/deploy-sendall"
-// import { solidity } from "ethereum-waffle"
-// chai.use(solidity)
-// dotenvConfig({ path: resolve(__dirname, "./.env") })
 
 function getNetworks(): NetworksUserConfig | undefined {
   const infuraApiKey = process.env.INFURA_API_KEY

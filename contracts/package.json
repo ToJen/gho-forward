@@ -85,6 +85,8 @@
   "license": "ISC",
   "dependencies": {
     "@aave/core-v3": "^1.18.0",
+    "@aave/deploy-v3": "^1.55.3",
+    "@aave/periphery-v3": "^2.5.0",
     "@nomiclabs/hardhat-etherscan": "^3.1.7",
     "@openzeppelin/contracts": "^4.8.3",
     "@openzeppelin/contracts-upgradeable": "^4.8.3",
