@@ -1,4 +1,6 @@
 {
   "solidity.remappingsUnix": ["@openzeppelin/=node_modules/@openzeppelin/"],
-  "solidity.packageDefaultDependenciesDirectory": "node_modules"
+  "solidity.packageDefaultDependenciesDirectory": "node_modules",
+  "solidity.enabledSolhint": true,
+  "solidity.formatter": "prettier"
 }
