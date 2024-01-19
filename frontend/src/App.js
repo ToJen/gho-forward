@@ -3,13 +3,16 @@ import React from 'react'
 import { BrowserRouter as Router } from 'react-router-dom'
 import { BaseRouter } from './components/BaseRouter'
 
+// 1. import `ChakraProvider` component
+import { ChakraProvider } from '@chakra-ui/react'
+
 function App() {
   return (
-    <div className="App">
+    <ChakraProvider>
       <Router>
         <BaseRouter />
       </Router>
-    </div>
+    </ChakraProvider>
   )
 }
 

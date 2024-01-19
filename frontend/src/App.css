@@ -1,7 +1,3 @@
-.App {
-  text-align: center;
-}
-
 .image {
   pointer-events: none;
   border-radius: 10;
@@ -10,15 +6,13 @@
 }
 
 .App-header {
-  background-color: white;
+  background-color: #294808;
   height: 10vh;
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
   font-size: calc(10px + 2vmin);
-  color: white;
-  box-shadow: 0 0 5px 0 #82B7DC;
   position: fixed;
   top: 0;
   width: 100%
@@ -30,18 +24,6 @@
   background-color: #808080;
   border-radius: 30px;
   color: white;
-}
-
-.wallet-button {
-  background-color: #3466AA;
-  color: white;
-  font-size: 20px;
-  font-weight: bold;
-  padding: 10px 60px;
-  border-radius: 10px;
-  margin: 10px 0px;
-  cursor: pointer;
-  border-width: 0;
 }
 
 .action-button {
@@ -79,10 +61,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.how-it-works{
-  color: #82B7DC;
 }
 
 .powered-by{
