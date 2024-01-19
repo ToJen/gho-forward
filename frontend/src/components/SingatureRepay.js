@@ -1,26 +1,35 @@
 // import ABI from '../contracts/LoanFactoryABI.json'
 import React, { useEffect, useState } from "react";
-import { BigNumber } from "ethers";
+
 import HowItWorks from "../assets/HowItWorks.png";
 import Compound from "../assets/compound-logo.png";
 import Sismo from "../assets/sismo-logo.png";
 import Push from "../assets/push-logo.jpeg";
 import {
+  AAVE_POOL_ADDR_SEPOLIA,
   GHO_DEBT_TOKEN_ADDR_SEPOLIA,
+  GHO_TOKEN_ADDR_SEPOLIA,
   buildDelegationWithSigParams,
 } from "../utils";
 import GhoDebtTokenAbi from "../abis/ghoDebtTokenAbi.json";
 import { splitSignature } from "ethers/lib/utils";
+import { Pool } from "@aave/contract-helpers";
+import { formatEther, parseEther, parseUnits } from "viem";
+import { useSignTypedData } from "wagmi";
+
 const ethers = require("ethers");
 
 const EthInWei = 1000000000000000000;
 
-const testGhoSafeAddress = "0x50C3357Bc7608f3ac2EA301De154e122EBeAc63E"; //"0x557377ddfB04247e4AE9F7ae341fb3eC84e43949";
-const Signature = () => {
+const testGhoSafeAddress = "0x557377ddfB04247e4AE9F7ae341fb3eC84e43949";
+
+const SignatureRepay = () => {
   const [connectedAddress, setConnectedAddress] = useState(null);
   const contractAddress = "0xC2eDd4C8fD6ae11bD209e3eE7cC0B60159A92663";
   const GITCOIN_PASSPORT_HOLDERS = "0x1cde61966decb8600dfd0749bd371f12";
   const ROCIFI_CREDIT_HOLDERS = "0xb3ac412738ed399acab21fbda9add42c";
+
+  const { data, signTypedData } = useSignTypedData();
 
   const provider = new ethers.providers.Web3Provider(window.ethereum);
 
@@ -47,6 +56,11 @@ const Signature = () => {
     setConnectedAddress(account);
   };
 
+  useEffect(() => {
+    if (!data) return;
+
+    console.log("data", splitSignature(data));
+  }, [data]);
   const handleConnectWallet = async () => {
     try {
       if (window.ethereum) {
@@ -54,7 +68,7 @@ const Signature = () => {
         const accounts = await window.ethereum.request({
           method: "eth_accounts",
         });
-        setConnectedAddress(accounts[0]);
+        setConnectedAddress(accounts[1]);
       } else {
         throw new Error(
           "No Ethereum wallet found in your browser. Please install MetaMask or a compatible wallet."
@@ -74,6 +88,23 @@ const Signature = () => {
     if (!connectedAddress) {
       return;
     }
+
+    const pool = new Pool(provider, {
+      POOL: AAVE_POOL_ADDR_SEPOLIA, // UiGhoDataProvider  Sepolia, GHO market
+    });
+    console.log(connectedAddress);
+    // interest mode 2
+    // behalf of og - 0x32D1C9FFee079d6FD8E0d0E77aD5644DDdb3d95a
+
+    // Generate payload to be signed by user
+    const approvalMsg = await pool.signERC20Approval({
+      user: "0xa7750fe3Bbc014077672a0eDe9C7C4a554A4B6a6",
+      reserve: GHO_TOKEN_ADDR_SEPOLIA,
+      amount: parseUnits("1"),
+      deadline: "1805356853", // determined by you
+    });
+    console.log("approvalMsg", approvalMsg);
+
     // Create a new instance of the contract using the ABI and address
     const ghoDebtTokeContract = new ethers.Contract(
       GHO_DEBT_TOKEN_ADDR_SEPOLIA,
@@ -84,30 +115,33 @@ const Signature = () => {
     const nonce = await ghoDebtTokeContract
       .connect(signer)
       .nonces(connectedAddress);
-    const signatureParams = buildDelegationWithSigParams(
-      11155111,
-      GHO_DEBT_TOKEN_ADDR_SEPOLIA,
-      "1",
-      "Aave Variable Debt Sepolia GHO",
-      testGhoSafeAddress,
-      nonce,
-      // replace with deadline
-      "1805356853",
-      // TODO replace with delegation amount
-      BigNumber.from("1000000000000000000")
-    );
+    // const signatureParams = buildDelegationWithSigParams(
+    //   11155111,
+    //   GHO_DEBT_TOKEN_ADDR_SEPOLIA,
+    //   "1",
+    //   "Aave Variable Debt Sepolia GHO",
+    //   testGhoSafeAddress,
+    //   nonce,
+    //   // replace with deadline
+    //   "1805356853",
+    //   // TODO replace with delegation amount
+    //   parseUnits("10", 18)
+    // );
+    const signatureParams = JSON.parse(approvalMsg);
     const types = {
       [signatureParams.primaryType]:
         signatureParams.types[signatureParams.primaryType],
     };
 
-    const flatSig = await signer._signTypedData(
-      signatureParams.domain,
-      types,
-      signatureParams.message
-    );
+    // const flatSig = await signer._signTypedData(
+    //   signatureParams.domain,
+    //   types,
+    //   signatureParams.message
+    // );
 
-    console.log("split", splitSignature(flatSig));
+    signTypedData(signatureParams);
+
+    // console.log("split", splitSignature(flatSig));
   };
 
   return (
@@ -306,4 +340,4 @@ const Signature = () => {
   );
 };
 
-export default Signature;
+export default SignatureRepay;
