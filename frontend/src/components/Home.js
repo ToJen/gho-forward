@@ -18,7 +18,7 @@ const Home = () => {
   const contractAddress = "0xC2eDd4C8fD6ae11bD209e3eE7cC0B60159A92663";
   const GITCOIN_PASSPORT_HOLDERS = "0x1cde61966decb8600dfd0749bd371f12";
   const ROCIFI_CREDIT_HOLDERS = "0xb3ac412738ed399acab21fbda9add42c";
-
+  console.log("connected address", address);
   const [loanAmount, setLoanAmount] = useState(0);
   const [creditScore, setCreditScore] = useState(0);
   const [loanInterest, setLoanInterest] = useState(0);
