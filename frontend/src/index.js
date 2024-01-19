@@ -4,10 +4,33 @@ import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 
+import { WagmiConfig, createConfig } from "wagmi";
+import { ConnectKitProvider, ConnectKitButton, getDefaultConfig } from "connectkit";
+
+const config = createConfig(
+  getDefaultConfig({
+    // Required API Keys
+    alchemyId: "", // or infuraId
+    walletConnectProjectId: "",
+
+    // Required
+    appName: "Your App Name",
+
+    // Optional
+    appDescription: "Your App Description",
+    appUrl: "https://family.co", // your app's url
+    appIcon: "https://family.co/logo.png", // your app's icon, no bigger than 1024x1024px (max. 1MB)
+  }),
+);
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <App />
+  <WagmiConfig config={config}>
+    <ConnectKitProvider>
+      <App />
+      {/* <ConnectKitButton /> */}
+    </ConnectKitProvider>
+  </WagmiConfig>
   </React.StrictMode>
 );
 

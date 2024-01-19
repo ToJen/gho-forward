@@ -1,22 +1,22 @@
 // import ABI from '../contracts/LoanFactoryABI.json'
 import React, { useEffect, useState } from 'react'
+import { useModal } from "connectkit";
+import { useAccount, useDisconnect, useWalletClient } from "wagmi";
 import HowItWorks from '../assets/HowItWorks.png'
 import Compound from '../assets/compound-logo.png'
 import Sismo from '../assets/sismo-logo.png'
 import Push from '../assets/push-logo.jpeg'
-const ethers = require("ethers")
 
 const EthInWei = 1000000000000000000;
 const API_KEY = "fKkSd21Z.e7WkHo51ArHiJor6QTOc5c2ND1j7dl9u";
 const SCORER_ID = 6351;
 
 const Home = () => {
-  const [connectedAddress, setConnectedAddress] = useState(null)
+  const { address, isConnecting, isConnected, isDisconnected } = useAccount();
+  const { setOpen } = useModal();
   const contractAddress = '0xC2eDd4C8fD6ae11bD209e3eE7cC0B60159A92663'
   const GITCOIN_PASSPORT_HOLDERS = '0x1cde61966decb8600dfd0749bd371f12'
   const ROCIFI_CREDIT_HOLDERS = '0xb3ac412738ed399acab21fbda9add42c'
-
-  const provider = new ethers.providers.Web3Provider(window.ethereum)
 
   const [loanAmount, setLoanAmount] = useState(0)
   const [creditScore, setCreditScore] = useState(0)
@@ -28,52 +28,16 @@ const Home = () => {
   const [collateralAmount, setCollateralAmount] = useState(0)
   const [signedContract, setSignedContract] = useState(null)
   const [timeOverdue, setTimeOverdue] = useState(0);
-  const [signer, setSigner] = useState(null);
+
+  const { data: signer } = useWalletClient();
   const [score, setScore] = useState('');
   const [noScoreMessage, setNoScoreMessage] = useState('');
 
-  const getCurrentAccount = async () => {
-    const { ethereum } = window;
-
-    const accounts = await ethereum.request({ method: "eth_accounts" });
-
-    if (!accounts || accounts?.length === 0) {
-      return null;
-    }
-    const account = accounts[0];
-    setConnectedAddress(account);
-  };
-
-  const handleConnectWallet = async () => {
-    try {
-      if (window.ethereum) {
-        await window.ethereum.request({ method: 'eth_requestAccounts' })
-        const accounts = await window.ethereum.request({
-          method: 'eth_accounts',
-        })
-        setConnectedAddress(accounts[0])
-      } else {
-        throw new Error(
-          'No Ethereum wallet found in your browser. Please install MetaMask or a compatible wallet.',
-        )
-      }
-    } catch (error) {
-      console.error('Error connecting to wallet:', error)
-      throw error
-    }
-  }
-
   useEffect(() => {
-    getCurrentAccount();
-  }, [])
-
-  useEffect(() => {
-    if (connectedAddress) {
-      const signer = provider.getSigner();
-      setSigner(signer);
-      // setSignedContract(new ethers.Contract(contractAddress, ABI, signer))
+    if (isConnected) {
+      checkPassport()
     }
-  }, [connectedAddress])
+  }, [isConnected]);
 
   const headers = API_KEY ? ({
     'Content-Type': 'application/json',
@@ -85,7 +49,7 @@ const Home = () => {
   // getting the signing message
   const SIGNING_MESSAGE_URI = 'https://api.scorer.gitcoin.co/registry/signing-message'
 
-  async function checkPassport(currentAddress = connectedAddress) {
+  async function checkPassport(currentAddress = address) {
     console.log(`checking passport for ${currentAddress}`);
     setScore('');
     setNoScoreMessage('');
@@ -130,14 +94,14 @@ const Home = () => {
     if (!signer) return
     try {
       const { message, nonce } = await getSigningMessage()
-      const signature = await signer.signMessage(message)
+      const signature = await signer.signMessage({message})
 
       console.log(signature)
       const response = await fetch(SUBMIT_PASSPORT_URI, {
         method: 'POST',
         headers,
         body: JSON.stringify({
-          connectedAddress,
+          address,
           scorer: SCORER_ID,
           signature,
           nonce
@@ -167,7 +131,7 @@ const Home = () => {
           </span>
         </div>
         <div style={{ paddingRight: 20 }}>
-          {connectedAddress ? (
+          {address ? (
             <div>
               <span
                 style={{
@@ -188,7 +152,7 @@ const Home = () => {
                   color: 'white',
                 }}
               >
-                {connectedAddress}
+                {address}
               </span>
               
               <div >
@@ -197,7 +161,7 @@ const Home = () => {
                 </div>
             </div>
           ) : (
-            <button onClick={handleConnectWallet} className="wallet-button">
+            <button onClick={() => setOpen(true)} className="wallet-button">
               Connect Wallet
             </button>
           )}
