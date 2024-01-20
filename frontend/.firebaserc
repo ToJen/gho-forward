@@ -1,0 +1,14 @@
+{
+  "projects": {
+    "default": "gho-forward"
+  },
+  "targets": {
+    "gho-forward": {
+      "hosting": {
+        "gho-forward": [
+          "build"
+        ]
+      }
+    }
+  }
+}
