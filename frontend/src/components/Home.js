@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { useModal } from "connectkit";
 import { useAccount } from "wagmi";
-import { getBalances } from "../utils/utils";
+import { getAllowedBorrowLimitDetails, getBalances } from "../utils/utils";
 import {
   Box,
   Button,
@@ -33,6 +33,7 @@ const Home = () => {
   const [totalScore, setTotalScore] = useState(0);
   const [totalBorrowed, setTotalBorrowed] = useState(0);
   const [totalLoaned, setTotalLoaned] = useState(0);
+  const [borrowLimitDetails, setBorrowLimitDetails] = useState();
 
   useEffect(() => {
     if (isConnected) {
@@ -40,10 +41,6 @@ const Home = () => {
       getOnChainScore();
     }
   }, [isConnected]);
-
-  useEffect(() => {
-    setTotalScore(gitcoinScore + onChainScore);
-  }, [onChainScore, gitcoinScore]);
 
   useEffect(() => {
     if (borrowRequestDetails && address) {
@@ -59,7 +56,7 @@ const Home = () => {
       setTotalBorrowed(parseUnits(currBorrowed.toString(), 18));
       setTotalLoaned(parseUnits(currLoaned.toString(), 18));
     }
-  }, [borrowRequestDetails]);
+  }, [borrowRequestDetails, address]);
 
   const headers = API_KEY
     ? {
@@ -93,8 +90,14 @@ const Home = () => {
   }
 
   async function getOnChainScore() {
-    const balances = await getBalances([address]);
-    setOnChainScore(0);
+    const borrowLimits = await getAllowedBorrowLimitDetails(
+      address,
+      gitcoinScore
+    );
+    // TODO
+    setBorrowLimitDetails(borrowLimits);
+    setTotalScore(borrowLimits.gitcoinScore + borrowLimits.onChainScore);
+    setOnChainScore(borrowLimits.onChainScore);
   }
 
   return (
@@ -190,7 +193,11 @@ const Home = () => {
                 <Text>Borrow Limit</Text>
               </CardHeader>
               <CardBody>
-                <Text>$5000</Text>
+                <Text size="md">
+                  <strong>
+                    ${borrowLimitDetails?.borrowUpto ?? "-"} GHO *
+                  </strong>
+                </Text>
               </CardBody>
             </Card>
             <Card width={"100%"}>
@@ -198,7 +205,7 @@ const Home = () => {
                 <Text>Total Borrowed</Text>
               </CardHeader>
               <CardBody>
-                <Text>{totalBorrowed}</Text>
+                <Text size="md">{totalBorrowed}</Text>
               </CardBody>
             </Card>
             <Card width={"100%"}>
@@ -206,7 +213,7 @@ const Home = () => {
                 <Text>Total Loaned</Text>
               </CardHeader>
               <CardBody>
-                <Text>{totalLoaned}</Text>
+                <Text size="md">{totalLoaned}</Text>
               </CardBody>
             </Card>
           </Flex>
