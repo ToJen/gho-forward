@@ -17,12 +17,13 @@ import {
 } from "../../utils/constants";
 import { Pool } from "@aave/contract-helpers";
 import { parseUnits } from "viem";
-import { buildDelegationWithSigParams } from "../../utils/utils";
-import GhoSafeAbi from "../../abis/ghoSafeContractAbi.json";
+
+import AavePoolAbi from "../../abis/aavePoolAbi.json";
 import { splitSignature } from "ethers/lib/utils";
 const ethers = require("ethers");
 
 // TODO pass borrowRequestId, borrowedAmount
+const brwAmount = parseUnits("1");
 const RepayBorrowRequestButton = (borrowRequestId, borrowedAmount) => {
   const { data: signature, signTypedData } = useSignTypedData();
   const { address } = useAccount();
@@ -33,9 +34,9 @@ const RepayBorrowRequestButton = (borrowRequestId, borrowedAmount) => {
     isSuccess,
     write,
   } = useContractWrite({
-    address: GHO_SAFE_SEPOLIA,
-    abi: GhoSafeAbi,
-    functionName: "repayBorrowRequestWithPermit",
+    address: AAVE_POOL_ADDR_SEPOLIA,
+    abi: AavePoolAbi,
+    functionName: "repayWithPermit", //"repayBorrowRequestWithPermit",
   });
 
   useEffect(() => {
@@ -48,11 +49,17 @@ const RepayBorrowRequestButton = (borrowRequestId, borrowedAmount) => {
     const repayParams = {
       borrowRequestId: 0,
       deadline: DEADLINE,
+      amount: parseUnits("1", 18),
+      lendersAddress: "0x32D1C9FFee079d6FD8E0d0E77aD5644DDdb3d95a", // TODO lender address get from borrow request
       signature: { v: splitSig.v, r: splitSig.r, s: splitSig.s },
     };
+
     write({
       args: [
-        repayParams.borrowRequestId,
+        GHO_TOKEN_ADDR_SEPOLIA,
+        repayParams.amount,
+        2,
+        repayParams.lendersAddress,
         repayParams.deadline,
         repayParams.signature.v,
         repayParams.signature.r,
