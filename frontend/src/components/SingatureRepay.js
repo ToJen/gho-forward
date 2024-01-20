@@ -1,7 +1,5 @@
 // import ABI from '../contracts/LoanFactoryABI.json'
 import React, { useEffect, useState } from "react";
-
-import HowItWorks from "../assets/HowItWorks.png";
 import Compound from "../assets/compound-logo.png";
 import Sismo from "../assets/sismo-logo.png";
 import Push from "../assets/push-logo.jpeg";
@@ -203,10 +201,6 @@ const SignatureRepay = () => {
           <button onClick={signMessage} className="wallet-button">
             Sign
           </button>
-        </div>
-        <div className="how-it-works">
-          <h2>How it works</h2>
-          <img src={HowItWorks} />
         </div>
         <div className="powered-by">
           <h4>Powered by:</h4>
