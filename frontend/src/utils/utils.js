@@ -10,6 +10,7 @@ import {
   linea,
   zkSync,
 } from "viem/chains";
+import { GHO_DEBT_TOKEN_ADDR_SEPOLIA, SEPOLIA_CHAIN_ID } from "./constants";
 
 const supportChains = [
   polygon,
@@ -129,40 +130,43 @@ export async function getBalances(addresses) {
 }
 
 export const buildDelegationWithSigParams = (
-  chainId,
-  token,
-  revision,
-  tokenName,
   delegatee,
   nonce,
   deadline,
   value
-) => ({
-  types: {
-    EIP712Domain: [
-      { name: "name", type: "string" },
-      { name: "version", type: "string" },
-      { name: "chainId", type: "uint256" },
-      { name: "verifyingContract", type: "address" },
-    ],
-    DelegationWithSig: [
-      { name: "delegatee", type: "address" },
-      { name: "value", type: "uint256" },
-      { name: "nonce", type: "uint256" },
-      { name: "deadline", type: "uint256" },
-    ],
-  },
-  primaryType: "DelegationWithSig",
-  domain: {
-    name: tokenName,
-    version: revision,
-    chainId: chainId,
-    verifyingContract: token,
-  },
-  message: {
-    delegatee,
-    value,
-    nonce,
-    deadline,
-  },
-});
+) => {
+  const chainId = SEPOLIA_CHAIN_ID;
+  const token = GHO_DEBT_TOKEN_ADDR_SEPOLIA;
+  const revision = "1";
+  const tokenName = "Aave Variable Debt Sepolia GHO";
+
+  return {
+    types: {
+      EIP712Domain: [
+        { name: "name", type: "string" },
+        { name: "version", type: "string" },
+        { name: "chainId", type: "uint256" },
+        { name: "verifyingContract", type: "address" },
+      ],
+      DelegationWithSig: [
+        { name: "delegatee", type: "address" },
+        { name: "value", type: "uint256" },
+        { name: "nonce", type: "uint256" },
+        { name: "deadline", type: "uint256" },
+      ],
+    },
+    primaryType: "DelegationWithSig",
+    domain: {
+      name: tokenName,
+      version: revision,
+      chainId: chainId,
+      verifyingContract: token,
+    },
+    message: {
+      delegatee,
+      value,
+      nonce,
+      deadline,
+    },
+  };
+};
