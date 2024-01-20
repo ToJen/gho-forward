@@ -61,11 +61,8 @@ contract GhoSafe is IERC721Receiver, ReentrancyGuard, Ownable {
     uint256 _amount,
     uint256 _repayTime,
     uint256 _passportScore,
-    uint256 _onChainScore
-  ) external // bool withCollateral,
-  // address collateral721,
-  // uint256 tokenId
-  {
+    uint256 _onChainScore // bool withCollateral, // address collateral721, // uint256 tokenId
+  ) external {
     if (userHasBorrowed[_user]) {
       revert BorrowLimitReached();
     }
@@ -103,7 +100,7 @@ contract GhoSafe is IERC721Receiver, ReentrancyGuard, Ownable {
   //
   // How about we create a risk score and let the lender decide based on the risk score
   function fulfillBorrowRequestWithDelegatedSig(
-    uint256 borrowRequestId,
+    uint256 _borrowRequestId,
     address _delegator,
     uint256 _deadline,
     uint8 _v,
@@ -113,15 +110,15 @@ contract GhoSafe is IERC721Receiver, ReentrancyGuard, Ownable {
     bool _borrow,
     bool _transfer
   ) external nonReentrant {
-    if (borrowRequests[borrowRequestId].user == address(0)) {
+    if (borrowRequests[_borrowRequestId].user == address(0)) {
       revert BorrowRequestInvalid();
     }
 
-    if (borrowRequests[borrowRequestId].fulfilledBy != address(0)) {
+    if (borrowRequests[_borrowRequestId].fulfilledBy != address(0)) {
       revert BorrowRequestAlreadyFulfilled();
     }
 
-    if (borrowRequests[borrowRequestId].user != msg.sender) {
+    if (borrowRequests[_borrowRequestId].user != msg.sender) {
       revert NotAuthorized();
     }
 
@@ -130,8 +127,8 @@ contract GhoSafe is IERC721Receiver, ReentrancyGuard, Ownable {
     // TODO repay time check
 
     // TODO mark fulfilled
-    borrowRequests[borrowRequestId].fulfilledBy = _delegator;
-    uint256 amountBorrowed = borrowRequests[borrowRequestId].amount;
+    borrowRequests[_borrowRequestId].fulfilledBy = _delegator;
+    uint256 amountBorrowed = borrowRequests[_borrowRequestId].amount;
 
     ICreditDelegationToken(DEBT_TOKEN).delegationWithSig(
       _delegator,
@@ -155,10 +152,10 @@ contract GhoSafe is IERC721Receiver, ReentrancyGuard, Ownable {
     }
 
     if (_transfer) {
-      require(IERC20(GHO_TOKEN).transfer(borrowRequests[borrowRequestId].user, amountBorrowed), "Error Token");
+      require(IERC20(GHO_TOKEN).transfer(borrowRequests[_borrowRequestId].user, amountBorrowed), "Error Token");
     }
 
-    emit BorrowRequestFulfilled(borrowRequestId, borrowRequests[borrowRequestId].user, _delegatee);
+    emit BorrowRequestFulfilled(_borrowRequestId, borrowRequests[_borrowRequestId].user, _delegatee);
   }
 
   // 0x50C3357Bc7608f3ac2EA301De154e122EBeAc63E
@@ -168,25 +165,26 @@ contract GhoSafe is IERC721Receiver, ReentrancyGuard, Ownable {
   // v: 27
   // r: '0xee9f5c50a07bc583d20c9d47bf3d0d4ffd0313ff23f0e52c409be872420f1fae', s: '0x4f80816b1db7151148d39baea30ecdcc314f6d99eb9bbe1c6149400ebec99ba1'
   // 0,
-  function repayBorrowRequestWithPermit(
-    uint256 _borrowRequestId,
-    // address onBehalfOf,
-    uint256 _deadline,
-    uint8 _permitV,
-    bytes32 _permitR,
-    bytes32 _permitS
-  ) external nonReentrant {
+  function repayBorrowRequestWithPermit(uint256 _borrowRequestId) external nonReentrant {
     // todo checks
 
-    IPool(POOL_ADDRESS).repayWithPermit(
+    // IPool(POOL_ADDRESS).repayWithPermit(
+    //   GHO_TOKEN,
+    //   borrowRequests[_borrowRequestId].amount,
+    //   interestRateMode,
+    //   borrowRequests[_borrowRequestId].fulfilledBy,
+    //   _deadline,
+    //   _permitV,
+    //   _permitR,
+    //   _permitS
+    // );
+    IERC20(GHO_TOKEN).transferFrom(msg.sender, address(this), borrowRequests[_borrowRequestId].amount);
+
+    IPool(POOL_ADDRESS).repay(
       GHO_TOKEN,
       borrowRequests[_borrowRequestId].amount,
       interestRateMode,
-      borrowRequests[_borrowRequestId].fulfilledBy,
-      _deadline,
-      _permitV,
-      _permitR,
-      _permitS
+      borrowRequests[_borrowRequestId].fulfilledBy
     );
   }
 
