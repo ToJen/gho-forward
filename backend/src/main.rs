@@ -23,7 +23,7 @@ async fn main() -> std::io::Result<()> {
             .route("/submit_passport", web::post().to(submit_passport))
             .route("/get_passport_score", web::get().to(get_passport_score))
     })
-    .bind("127.0.0.1:8000")?
+    .bind("0.0.0.0:8000")?
     .run()
     .await
 }
