@@ -4,12 +4,10 @@ import { BigNumber } from "ethers";
 import Compound from "../assets/compound-logo.png";
 import Sismo from "../assets/sismo-logo.png";
 import Push from "../assets/push-logo.jpeg";
-import {
-  GHO_DEBT_TOKEN_ADDR_SEPOLIA,
-  buildDelegationWithSigParams,
-} from "../utils";
 import GhoDebtTokenAbi from "../abis/ghoDebtTokenAbi.json";
 import { splitSignature } from "ethers/lib/utils";
+import { buildDelegationWithSigParams } from "../utils/utils";
+import { GHO_DEBT_TOKEN_ADDR_SEPOLIA } from "../utils/constants";
 const ethers = require("ethers");
 
 const EthInWei = 1000000000000000000;

@@ -27,6 +27,9 @@ function getPublicClient(supportChain) {
     transport: http(),
   });
 }
+
+const WeightsForScoring = {};
+
 //takes in multiple address
 export async function getBalances(addresses) {
   const finalBalances = [];
@@ -124,3 +127,42 @@ export async function getBalances(addresses) {
   }
   return finalBalances;
 }
+
+export const buildDelegationWithSigParams = (
+  chainId,
+  token,
+  revision,
+  tokenName,
+  delegatee,
+  nonce,
+  deadline,
+  value
+) => ({
+  types: {
+    EIP712Domain: [
+      { name: "name", type: "string" },
+      { name: "version", type: "string" },
+      { name: "chainId", type: "uint256" },
+      { name: "verifyingContract", type: "address" },
+    ],
+    DelegationWithSig: [
+      { name: "delegatee", type: "address" },
+      { name: "value", type: "uint256" },
+      { name: "nonce", type: "uint256" },
+      { name: "deadline", type: "uint256" },
+    ],
+  },
+  primaryType: "DelegationWithSig",
+  domain: {
+    name: tokenName,
+    version: revision,
+    chainId: chainId,
+    verifyingContract: token,
+  },
+  message: {
+    delegatee,
+    value,
+    nonce,
+    deadline,
+  },
+});

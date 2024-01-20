@@ -7,8 +7,7 @@ import {
   AAVE_POOL_ADDR_SEPOLIA,
   GHO_DEBT_TOKEN_ADDR_SEPOLIA,
   GHO_TOKEN_ADDR_SEPOLIA,
-  buildDelegationWithSigParams,
-} from "../utils";
+} from "../utils/constants";
 import GhoDebtTokenAbi from "../abis/ghoDebtTokenAbi.json";
 import { splitSignature } from "ethers/lib/utils";
 import { Pool } from "@aave/contract-helpers";

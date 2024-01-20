@@ -1,11 +1,11 @@
 // import ABI from '../contracts/LoanFactoryABI.json'
-import React, { useEffect, useState } from 'react'
-import { useModal } from 'connectkit'
-import { useAccount, useDisconnect, useWalletClient } from 'wagmi'
-import Compound from '../assets/compound-logo.png'
-import Sismo from '../assets/sismo-logo.png'
-import Push from '../assets/push-logo.jpeg'
-import { getBalances } from '../utils/utils'
+import React, { useEffect, useState } from "react";
+import { useModal } from "connectkit";
+import { useAccount, useDisconnect, useWalletClient } from "wagmi";
+import Compound from "../assets/compound-logo.png";
+import Sismo from "../assets/sismo-logo.png";
+import Push from "../assets/push-logo.jpeg";
+import { getBalances } from "../utils/utils";
 import {
   Box,
   Button,
@@ -15,7 +15,9 @@ import {
   Flex,
   Heading,
   Text,
-} from '@chakra-ui/react'
+} from "@chakra-ui/react";
+import { useGetBorrowRequests } from "../hooks/useGetBorrowRequests";
+import RequestLoanModal from "./RequestLoanModal/RequestLoanModal";
 
 const EthInWei = 1000000000000000000;
 const API_KEY = "fKkSd21Z.e7WkHo51ArHiJor6QTOc5c2ND1j7dl9u";
@@ -42,6 +44,8 @@ const Home = () => {
   const { data: signer } = useWalletClient();
   const [score, setScore] = useState("");
   const [noScoreMessage, setNoScoreMessage] = useState("");
+  // const { lastBorrowRequestId, borrowRequestDetails } = useGetBorrowRequests();
+  // console.log("borrowRequestDetails", borrowRequestDetails);
 
   useEffect(() => {
     if (isConnected) {
@@ -133,7 +137,7 @@ const Home = () => {
   }
 
   return (
-    <Box style={{ height: '100vh', backgroundColor: '#F5F5F5' }}>
+    <Box style={{ height: "100vh", backgroundColor: "#F5F5F5" }}>
       <header className="App-header">
         <Box style={{ paddingLeft: 20 }}>
           <Text
@@ -147,15 +151,15 @@ const Home = () => {
             <Text
               color={"black"}
               style={{
-                fontSize: 'large',
-                backgroundColor: '#00FFFF',
-                borderRadius: '10px',
-                padding: '4px 8px',
-                color: 'white',
-                maxWidth: '200px',
-                textOverflow: 'ellipsis',
-                overflow: 'hidden',
-                whiteSpace: 'nowrap',
+                fontSize: "large",
+                backgroundColor: "#00FFFF",
+                borderRadius: "10px",
+                padding: "4px 8px",
+                color: "white",
+                maxWidth: "200px",
+                textOverflow: "ellipsis",
+                overflow: "hidden",
+                whiteSpace: "nowrap",
               }}
             >
               {address}
@@ -168,11 +172,9 @@ const Home = () => {
         </Box>
       </header>
 
-      <Flex justifyContent={'space-between'} paddingInline={'20px'}>
-        <Heading marginTop={'12vh'}>Welcome</Heading>
-        <Button marginTop={'12vh'} backgroundColor={'#D2F7A9'}>
-          Request Loan
-        </Button>
+      <Flex justifyContent={"space-between"} paddingInline={"20px"}>
+        <Heading marginTop={"12vh"}>Welcome</Heading>
+        <RequestLoanModal />
       </Flex>
       <Flex>
         <Box
@@ -246,27 +248,27 @@ const Home = () => {
         </Box>
         <Box
           style={{
-            flexDirection: 'column',
-            display: 'flex',
+            flexDirection: "column",
+            display: "flex",
             marginTop: 20,
           }}
           flex={2}
         >
           <Flex
-            justifyContent={'space-between'}
-            marginRight={'20px'}
-            gap={'10px'}
-            boxShadow={'5px'}
+            justifyContent={"space-between"}
+            marginRight={"20px"}
+            gap={"10px"}
+            boxShadow={"5px"}
           >
-            <Card width={'100%'}>
-              <CardHeader paddingBlock={'10px 5px'}>
+            <Card width={"100%"}>
+              <CardHeader paddingBlock={"10px 5px"}>
                 <Text>Borrow Limit</Text>
               </CardHeader>
               <CardBody>
                 <Text>$5000</Text>
               </CardBody>
             </Card>
-            <Card width={'100%'}>
+            <Card width={"100%"}>
               <CardHeader>
                 <Text>Borrow Limit</Text>
               </CardHeader>
@@ -274,7 +276,7 @@ const Home = () => {
                 <Text>$5000</Text>
               </CardBody>
             </Card>
-            <Card width={'100%'}>
+            <Card width={"100%"}>
               <CardHeader>
                 <Text>Borrow Limit</Text>
               </CardHeader>
@@ -285,11 +287,11 @@ const Home = () => {
           </Flex>
           <Box
             style={{
-              flexDirection: 'column',
-              display: 'flex',
-              padding: '30px',
-              backgroundColor: '#F1F1F1',
-              height: 'inherit',
+              flexDirection: "column",
+              display: "flex",
+              padding: "30px",
+              backgroundColor: "#F1F1F1",
+              height: "inherit",
               marginRight: 20,
             }}
           >
