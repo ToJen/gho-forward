@@ -5,11 +5,7 @@ import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 
 import { WagmiConfig, createConfig, sepolia } from "wagmi";
-import {
-  ConnectKitProvider,
-  ConnectKitButton,
-  getDefaultConfig,
-} from "connectkit";
+import { ConnectKitProvider, getDefaultConfig } from "connectkit";
 
 const config = createConfig(
   getDefaultConfig({
