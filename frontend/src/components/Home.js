@@ -19,7 +19,8 @@ import {
 import { useGetBorrowRequests } from "../hooks/useGetBorrowRequests";
 import RequestLoanModal from "./RequestLoanModal/RequestLoanModal";
 import CustomTable from "./CustomTable/CustomTable";
-import { Tabs, TabList, TabPanels, Tab, TabPanel } from '@chakra-ui/react'
+import { Tabs, TabList, TabPanels, Tab, TabPanel } from "@chakra-ui/react";
+import BorrowRequestsTable from "./BorrowRequests/BorrowRequestsTable";
 
 const EthInWei = 1000000000000000000;
 const API_KEY = "fKkSd21Z.e7WkHo51ArHiJor6QTOc5c2ND1j7dl9u";
@@ -281,17 +282,17 @@ const Home = () => {
               marginRight: 20,
             }}
           >
-            <Tabs variant='enclosed'>
+            <Tabs variant="enclosed">
               <TabList>
                 <Tab>View All</Tab>
-                <Tab>Brrow Requests</Tab>
+                <Tab>Borrow Requests</Tab>
               </TabList>
               <TabPanels>
                 <TabPanel>
-            <CustomTable tableHeading={"Assets to Lend"}/>
+                  <CustomTable tableHeading={"Assets to Lend"} />
                 </TabPanel>
                 <TabPanel>
-            <CustomTable tableHeading={"Assets to Lend"}/>
+                  <BorrowRequestsTable tableHeading={"Borrow Requests"} />
                 </TabPanel>
               </TabPanels>
             </Tabs>

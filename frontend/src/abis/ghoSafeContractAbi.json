@@ -281,7 +281,7 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "borrowRequestId",
+        "name": "_borrowRequestId",
         "type": "uint256"
       },
       {
@@ -332,6 +332,61 @@
   },
   {
     "inputs": [],
+    "name": "getBorrowReqeusts",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "user",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "fulfilledBy",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "interestRate",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "repayTime",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "passportScore",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "onChainScore",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "hasRepayed",
+            "type": "bool"
+          }
+        ],
+        "internalType": "struct GhoSafe.BorrowRequest[]",
+        "name": "",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "interestRateMode",
     "outputs": [
       {
@@ -341,6 +396,40 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "operator",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "from",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bytes",
+        "name": "data",
+        "type": "bytes"
+      }
+    ],
+    "name": "onERC721Received",
+    "outputs": [
+      {
+        "internalType": "bytes4",
+        "name": "",
+        "type": "bytes4"
+      }
+    ],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -369,26 +458,6 @@
         "internalType": "uint256",
         "name": "_borrowRequestId",
         "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_deadline",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint8",
-        "name": "_permitV",
-        "type": "uint8"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "_permitR",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "_permitS",
-        "type": "bytes32"
       }
     ],
     "name": "repayBorrowRequestWithPermit",
@@ -465,19 +534,6 @@
       }
     ],
     "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "borrowRequestId",
-        "type": "uint256"
-      }
-    ],
-    "name": "withdrawToken",
-    "outputs": [],
-    "stateMutability": "nonpayable",
     "type": "function"
   }
 ]

@@ -17,6 +17,7 @@ import {
 import { useContractWrite, useAccount } from "wagmi";
 import GhoSafeAbi from "../../abis/ghoSafeContractAbi.json";
 import { GHO_SAFE_SEPOLIA, REPAY_TIME } from "../../utils/constants";
+import { parseUnits } from "viem";
 
 const RequestLoanModal = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -41,7 +42,7 @@ const RequestLoanModal = () => {
     // direct sending score is not safe, metatx?
     // TODO pass score here at the end
     write({
-      args: [address, 10, REPAY_TIME, 0, 0],
+      args: [address, parseUnits("1", 18), REPAY_TIME, 0, 0],
     });
   };
   return (
