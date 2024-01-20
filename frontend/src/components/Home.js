@@ -18,28 +18,16 @@ import {
 } from "@chakra-ui/react";
 import { useGetBorrowRequests } from "../hooks/useGetBorrowRequests";
 import RequestLoanModal from "./RequestLoanModal/RequestLoanModal";
+import CustomTable from "./CustomTable/CustomTable";
+import { Tabs, TabList, TabPanels, Tab, TabPanel } from '@chakra-ui/react'
 
 const EthInWei = 1000000000000000000;
 const API_KEY = "fKkSd21Z.e7WkHo51ArHiJor6QTOc5c2ND1j7dl9u";
 const SCORER_ID = 6351;
 
 const Home = () => {
-  const { address, isConnecting, isConnected, isDisconnected } = useAccount();
+  const { address, isConnected } = useAccount();
   const { setOpen } = useModal();
-  const contractAddress = "0xC2eDd4C8fD6ae11bD209e3eE7cC0B60159A92663";
-  const GITCOIN_PASSPORT_HOLDERS = "0x1cde61966decb8600dfd0749bd371f12";
-  const ROCIFI_CREDIT_HOLDERS = "0xb3ac412738ed399acab21fbda9add42c";
-
-  const [loanAmount, setLoanAmount] = useState(0);
-  const [creditScore, setCreditScore] = useState(0);
-  const [loanInterest, setLoanInterest] = useState(0);
-  const [showLoan, setShowLoan] = useState(false);
-  const [loanExists, setLoanExists] = useState(false);
-  const [pendingAmount, setPendingAmount] = useState(0);
-  const [healthRatio, setHealthRatio] = useState(0);
-  const [collateralAmount, setCollateralAmount] = useState(0);
-  const [signedContract, setSignedContract] = useState(null);
-  const [timeOverdue, setTimeOverdue] = useState(0);
 
   const { data: signer } = useWalletClient();
   const [score, setScore] = useState("");
@@ -289,79 +277,24 @@ const Home = () => {
             style={{
               flexDirection: "column",
               display: "flex",
-              padding: "30px",
-              backgroundColor: "#F1F1F1",
               height: "inherit",
               marginRight: 20,
             }}
           >
-            <Box
-              className="content-section"
-              style={{ color: "#82B7DC", flex: 1 }}
-            >
-              <h2>{loanExists ? "Your Loan Details" : "GET STARTED"}</h2>
-            </Box>
-
-            <Box
-              className="content-section"
-              style={{ color: "#82B7DC", flex: 3 }}
-            >
-              {loanExists ? (
-                <Box
-                  style={{
-                    flexDirection: "column",
-                    display: "flex",
-                    color: "#82B7DC",
-                    fontWeight: "bold",
-                  }}
-                >
-                  <Text className="loan-info">
-                    Total amount borrowed: {loanAmount}
-                  </Text>
-                  <Text className="loan-info">Health Ratio: {healthRatio}</Text>
-                  <Text className="loan-info">
-                    Amount pending to be paid: {pendingAmount}
-                  </Text>
-                  <Text className="loan-info">Time Overdue: {timeOverdue}</Text>
-                </Box>
-              ) : showLoan ? (
-                <Box
-                  style={{
-                    flexDirection: "column",
-                    display: "flex",
-                    color: "#82B7DC",
-                    fontWeight: "bold",
-                  }}
-                >
-                  <Text className="loan-description">
-                    Based on the ZK proofs provided and your previous credit
-                    history. Following are the details about the loan that you
-                    are eligible for:
-                  </Text>
-                  <Text className="loan-info">Trust Score: {creditScore}</Text>
-                  <Text className="loan-info">Loan Amount: {loanAmount}</Text>
-                  <Text className="loan-info">
-                    Interest rate: {loanInterest}% p.a.
-                  </Text>
-                  <Text className="loan-info">
-                    Collateral Amount: {collateralAmount}
-                  </Text>
-                  <Text className="loan-description">
-                    {collateralAmount
-                      ? "You don't have the required trust score yet for a collateral free loan"
-                      : "Yay! You are eligible for a collateral free loan"}
-                  </Text>
-                </Box>
-              ) : (
-                <p className="description">
-                  If you are here for the first time, get an estimate of the
-                  loan amount you are eligible for and the corresponding
-                  interest rate. If you already have a loan you can check the
-                  details of your loan and repay the pending amount. To
-                  continue, sign in with sismo.
-                </p>
-              )}
-            </Box>
+            <Tabs variant='enclosed'>
+              <TabList>
+                <Tab>View All</Tab>
+                <Tab>Brrow Requests</Tab>
+              </TabList>
+              <TabPanels>
+                <TabPanel>
+            <CustomTable tableHeading={"Assets to Lend"}/>
+                </TabPanel>
+                <TabPanel>
+            <CustomTable tableHeading={"Assets to Lend"}/>
+                </TabPanel>
+              </TabPanels>
+            </Tabs>
           </Box>
         </Box>
       </Flex>
