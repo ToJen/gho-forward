@@ -232,7 +232,8 @@ const Home = () => {
               </TabList>
               <TabPanels>
                 <TabPanel>
-                  <CustomTable tableHeading={"Assets to Lend"} />
+                  {/* TODO */}
+                  {/* <CustomTable tableHeading={"Assets to Lend"} /> */}
                   <BorrowRequestsTable
                     borrowRequestDetails={borrowRequestDetails}
                     isLoading={isLoading}
