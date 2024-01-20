@@ -1,5 +1,11 @@
 import { ERC20_ABI, allChainTokenInfo, tokenRegistry } from "./tokenRegistry";
-import { createPublicClient, formatEther, formatUnits, http } from "viem";
+import {
+  createPublicClient,
+  formatEther,
+  formatUnits,
+  http,
+  parseUnits,
+} from "viem";
 import {
   polygon,
   mainnet,
@@ -29,7 +35,20 @@ function getPublicClient(supportChain) {
   });
 }
 
-const WeightsForScoring = {};
+const WeightsForScoring = {
+  [polygon.id]: 15,
+  [mainnet.id]: 30,
+  [arbitrum.id]: 15,
+  [optimism.id]: 10,
+  [base.id]: 10,
+  [linea.id]: 5,
+  [zkSync.id]: 15,
+};
+const SecondHelper = {
+  OneHour: 3600,
+  OneDay: 86400,
+  SixDays: 518400,
+};
 
 //takes in multiple address
 export async function getBalances(addresses) {
@@ -173,9 +192,118 @@ export const buildDelegationWithSigParams = (
 
 export function truncateAddress(address) {
   if (!address) return "No Account";
+  if ("0x0000000000000000000000000000000000000000" == address) return null;
   const match = address.match(
     /^(0x[a-zA-Z0-9]{4})[a-zA-Z0-9]+([a-zA-Z0-9]{4})$/
   );
   if (!match) return address;
   return `${match[1]}…${match[2]}`;
+}
+
+export async function getAllowedBorrowLimitDetails(address, gitcoinScore) {
+  const balances = testbalances[0]; // (await getBalances([address]))?.[0];
+  if (balances == null) {
+    console.log("no onchain score");
+  }
+  // do some math
+  let onChainScore = 0;
+  Object.keys(WeightsForScoring).forEach((chainId) => {
+    if (balances[chainId]?.balance == null) {
+      return;
+    }
+    const currentChainScore =
+      (parseUnits(balances[chainId].balance) % 100) *
+      WeightsForScoring[chainId];
+    onChainScore += currentChainScore;
+  });
+  console.log(`onChainScore`, onChainScore);
+  const finalScore = 12;
+  switch (finalScore) {
+    case finalScore > 10 && finalScore < 20:
+      return {
+        borrowUpto: parseUnits("10", 18),
+        repayTime: Math.floor(Date.now() / 1000) + SecondHelper.OneDay * 2,
+      };
+    case finalScore > 20 && finalScore < 40:
+      return {
+        borrowUpto: parseUnits("100", 18),
+        repayTime: Math.floor(Date.now() / 1000) + SecondHelper.OneDay * 2,
+      };
+    case finalScore > 40 && finalScore < 60:
+      return {
+        borrowUpto: parseUnits("500", 18),
+        repayTime: Math.floor(Date.now() / 1000) + SecondHelper.SixDays,
+      };
+    case finalScore > 60:
+      return {
+        borrowUpto: parseUnits("1000", 18),
+        repayTime: Math.floor(Date.now() / 1000) + SecondHelper.SixDays * 12,
+      };
+    default:
+      return {
+        borrowUpto: parseUnits("10", 18),
+        repayTime: SecondHelper.OneDay * 2,
+      };
+  }
+}
+
+const testbalances = [
+  {
+    10: {
+      address: "0x18D365087Eb68362c7E62792953fB209703541fE",
+      networkName: "optimism",
+      balance: "0.00068464921077008",
+      tokens: [],
+    },
+    137: {
+      address: "0x18D365087Eb68362c7E62792953fB209703541fE",
+      networkName: "matic",
+      balance: "0.030371468725926904",
+      tokens: [],
+    },
+    324: {
+      address: "0x18D365087Eb68362c7E62792953fB209703541fE",
+      networkName: "zksync-era",
+      balance: "0.015777137699981988",
+      tokens: [],
+    },
+    8453: {
+      address: "0x18D365087Eb68362c7E62792953fB209703541fE",
+      networkName: "base",
+      balance: "0.001088441370999742",
+      tokens: [],
+    },
+    59144: {
+      address: "0x18D365087Eb68362c7E62792953fB209703541fE",
+      networkName: "linea-mainnet",
+      balance: "1.000027067355523564",
+      tokens: [],
+    },
+  },
+];
+
+export function timeConverter(UNIX_timestamp) {
+  var a = new Date(UNIX_timestamp * 1000);
+  var months = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ];
+  var year = a.getFullYear();
+  var month = months[a.getMonth()];
+  var date = a.getDate();
+  var hour = a.getHours();
+  var min = a.getMinutes();
+  var sec = a.getSeconds(); //+ " " + year
+  var time = date + " " + month + " " + hour + ":" + min + ":" + sec;
+  return time;
 }
