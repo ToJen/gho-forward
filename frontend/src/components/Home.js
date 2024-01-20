@@ -28,16 +28,22 @@ const Home = () => {
   const { setOpen } = useModal();
   const { borrowRequestDetails, isLoading }= useGetBorrowRequests();
 
-  const [score, setScore] = useState("");
-  const [noScoreMessage, setNoScoreMessage] = useState("");
+  const [gitcoinScore, setGitcoinScore] = useState(0);
+  const [onChainScore, setOnChainScore] = useState(0);
+  const [totalScore, setTotalScore] = useState(0);
   const [totalBorrowed, setTotalBorrowed] = useState(0);
   const [totalLoaned, setTotalLoaned] = useState(0);
 
   useEffect(() => {
     if (isConnected) {
       checkPassport();
+      getOnChainScore();
     }
   }, [isConnected]);
+
+  useEffect(() => {
+    setTotalScore(gitcoinScore + onChainScore)
+  }, [onChainScore, gitcoinScore])
 
   useEffect(() => {
     if (borrowRequestDetails && address) {
@@ -64,8 +70,7 @@ const Home = () => {
 
   async function checkPassport(currentAddress = address) {
     console.log(`checking passport for ${currentAddress}`);
-    setScore("");
-    setNoScoreMessage("");
+    setGitcoinScore(0);
 
     const GET_PASSPORT_SCORE_URI = `https://api.scorer.gitcoin.co/registry/score/${SCORER_ID}/${currentAddress}`;
 
@@ -78,18 +83,18 @@ const Home = () => {
 
       if (passportData.score) {
         const roundedScore = Math.round(passportData.score * 100) / 100;
-        setScore(roundedScore.toString());
+        setGitcoinScore(roundedScore.toString());
       } else {
-        console.log(
-          "No score available, please add stamps to your passport and then resubmit."
-        );
-        setNoScoreMessage(
-          "No score available, please submit your passport after you have added some stamps."
-        );
+        setGitcoinScore(0);
       }
     } catch (err) {
       console.log("error: ", err);
     }
+  }
+
+  async function getOnChainScore() {
+    const balances = await getBalances([address]);
+    setOnChainScore(0);
   }
 
   return (
@@ -136,18 +141,35 @@ const Home = () => {
           style={{
             flexDirection: "column",
             display: "flex",
+            gap: "10px",
+            margin: "20px"
           }}
           flex={1}
         >
-          <Box>
-            <button
-              onClick={async () => {
-                console.log('getBalances([""])', await getBalances([address]));
-              }}
-            >
-              Get Balances
-            </button>
-          </Box>
+          <Card width={"100%"}>
+            <CardHeader paddingBlock={"10px 5px"}>
+              <Text>GHO Forward Score</Text>
+            </CardHeader>
+            <CardBody>
+              <Text>{totalScore}</Text>
+            </CardBody>
+          </Card>
+          <Card width={"100%"}>
+            <CardHeader paddingBlock={"10px 5px"}>
+              <Text>Gitcoin Score</Text>
+            </CardHeader>
+            <CardBody>
+              <Text>{gitcoinScore}</Text>
+            </CardBody>
+          </Card>
+          <Card width={"100%"}>
+            <CardHeader paddingBlock={"10px 5px"}>
+              <Text>On-Chain Score</Text>
+            </CardHeader>
+            <CardBody>
+              <Text>{onChainScore}</Text>
+            </CardBody>
+          </Card>
         </Box>
         <Box
           style={{
@@ -193,7 +215,7 @@ const Home = () => {
               flexDirection: "column",
               display: "flex",
               height: "inherit",
-              marginRight: 20,
+              margin: "20px 20px 0 0",
             }}
           >
             <Tabs variant="enclosed">

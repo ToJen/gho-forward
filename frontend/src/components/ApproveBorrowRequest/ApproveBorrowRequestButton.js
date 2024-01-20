@@ -56,7 +56,6 @@ const ApproveBorrowRequestButton = ({ approvalAmount }) => {
     <>
       <Button
         colorScheme="blue"
-        mr={3}
         onClick={signMessage}
         isLoading={nonceIsLoading}
       >
