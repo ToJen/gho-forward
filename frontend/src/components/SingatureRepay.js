@@ -11,7 +11,7 @@ import {
 import GhoDebtTokenAbi from "../abis/ghoDebtTokenAbi.json";
 import { splitSignature } from "ethers/lib/utils";
 import { Pool } from "@aave/contract-helpers";
-import { formatEther, parseEther, parseUnits } from "viem";
+import { parseUnits } from "viem";
 import { useSignTypedData } from "wagmi";
 
 const ethers = require("ethers");
