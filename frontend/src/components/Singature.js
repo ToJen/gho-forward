@@ -8,6 +8,7 @@ import GhoDebtTokenAbi from "../abis/ghoDebtTokenAbi.json";
 import { splitSignature } from "ethers/lib/utils";
 import { buildDelegationWithSigParams } from "../utils/utils";
 import { GHO_DEBT_TOKEN_ADDR_SEPOLIA } from "../utils/constants";
+import { setupAaveMarkets } from "../utils/aave-markets";
 const ethers = require("ethers");
 
 const EthInWei = 1000000000000000000;
@@ -32,6 +33,7 @@ const Signature = () => {
   const [signedContract, setSignedContract] = useState(null);
   const [timeOverdue, setTimeOverdue] = useState(0);
 
+  console.log("calling markets", setupAaveMarkets());
   const getCurrentAccount = async () => {
     const { ethereum } = window;
 
