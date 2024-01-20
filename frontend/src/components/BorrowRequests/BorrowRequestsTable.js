@@ -7,17 +7,24 @@ import {
   Td,
   TableContainer,
   Heading,
+  Tooltip,
   Box,
   Spinner,
 } from "@chakra-ui/react";
-import { truncateAddress } from "../../utils/utils";
+import { timeConverter, truncateAddress } from "../../utils/utils";
 import { useAccount } from "wagmi";
 import ApproveBorrowRequestButton from "../ApproveBorrowRequest/ApproveBorrowRequestButton";
 import { formatUnits } from "viem";
 
-function BorrowRequestsTable( { borrowRequestDetails = [], isLoading, filterUser=false }) {
+function BorrowRequestsTable({
+  borrowRequestDetails = [],
+  isLoading,
+  filterUser = false,
+}) {
   const { address } = useAccount();
-  const tableData = filterUser ? borrowRequestDetails.filter((request) => request.user == address) : borrowRequestDetails;
+  const tableData = filterUser
+    ? borrowRequestDetails.filter((request) => request.user == address)
+    : borrowRequestDetails;
   const col = [
     "Address",
     "On Chain Score",
@@ -31,7 +38,7 @@ function BorrowRequestsTable( { borrowRequestDetails = [], isLoading, filterUser
   return (
     <Box>
       <Heading as="h4" size="md" margin={"20px 8px  20px"}>
-        {filterUser ? "My Borrowings/Credit Delegations" : "Borrow Requests"}
+        {filterUser ? "Active Credit Delegations" : "Borrow Requests"}
       </Heading>
 
       <TableContainer>
@@ -52,10 +59,21 @@ function BorrowRequestsTable( { borrowRequestDetails = [], isLoading, filterUser
                   <Td>{truncateAddress(row.user)}</Td>
                   <Td>{Number(row.onChainScore)} </Td>
                   <Td>{Number(row.passportScore)} </Td>
-                  <Td>{formatUnits(row.amount)} ETH </Td>
                   <Td>{Number(row.interestRate)} </Td>
-                  <Td>{row.repayTime} </Td>
-                  <Td>{truncateAddress(row.fulfilledBy)} </Td>
+                  <Td>{formatUnits(row.amount, 18)} GHO </Td>
+                  <Td>{timeConverter(Number(row.repayTime))} </Td>
+                  <Td>
+                    {truncateAddress(row.fulfilledBy) ? (
+                      <Tooltip
+                        label="Hey, I'm here!"
+                        aria-label={`${truncateAddress(row.fulfilledBy)}`}
+                      >
+                        "Fulfilled"
+                      </Tooltip>
+                    ) : (
+                      "Open"
+                    )}{" "}
+                  </Td>
                   <Td>
                     {address == row.user ? (
                       "-"
