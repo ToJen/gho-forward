@@ -44,7 +44,7 @@ const WeightsForScoring = {
   [linea.id]: 5,
   [zkSync.id]: 15,
 };
-const SecondHelper = {
+export const SecondHelper = {
   OneHour: 3600,
   OneDay: 86400,
   SixDays: 518400,
@@ -212,39 +212,40 @@ export async function getAllowedBorrowLimitDetails(address, gitcoinScore) {
       return;
     }
     const currentChainScore =
-      (parseUnits(balances[chainId].balance) % 100) *
-      WeightsForScoring[chainId];
+      (balances[chainId].balance % 100) * WeightsForScoring[chainId];
     onChainScore += currentChainScore;
   });
   console.log(`onChainScore`, onChainScore);
   const finalScore = 12;
+  let borrowUpto;
+  let repayTime;
   switch (finalScore) {
     case finalScore > 10 && finalScore < 20:
-      return {
-        borrowUpto: parseUnits("10", 18),
-        repayTime: Math.floor(Date.now() / 1000) + SecondHelper.OneDay * 2,
-      };
+      borrowUpto = "10";
+      repayTime = Math.floor(Date.now() / 1000) + SecondHelper.OneDay * 2;
+      break;
     case finalScore > 20 && finalScore < 40:
-      return {
-        borrowUpto: parseUnits("100", 18),
-        repayTime: Math.floor(Date.now() / 1000) + SecondHelper.OneDay * 2,
-      };
+      borrowUpto = "100";
+      repayTime = Math.floor(Date.now() / 1000) + SecondHelper.OneDay * 2;
+      break;
     case finalScore > 40 && finalScore < 60:
-      return {
-        borrowUpto: parseUnits("500", 18),
-        repayTime: Math.floor(Date.now() / 1000) + SecondHelper.SixDays,
-      };
+      borrowUpto = "500";
+      repayTime = Math.floor(Date.now() / 1000) + SecondHelper.SixDays;
+      break;
     case finalScore > 60:
-      return {
-        borrowUpto: parseUnits("1000", 18),
-        repayTime: Math.floor(Date.now() / 1000) + SecondHelper.SixDays * 12,
-      };
+      borrowUpto = "1000";
+      repayTime = Math.floor(Date.now() / 1000) + SecondHelper.SixDays * 12;
+      break;
     default:
-      return {
-        borrowUpto: parseUnits("10", 18),
-        repayTime: SecondHelper.OneDay * 2,
-      };
+      borrowUpto = "10";
+      repayTime = Math.floor(Date.now() / 1000) + SecondHelper.OneDay * 2;
   }
+  return {
+    borrowUpto,
+    repayTime,
+    gitcoinScore: gitcoinScore ?? 10,
+    onChainScore: onChainScore ?? 12,
+  };
 }
 
 const testbalances = [

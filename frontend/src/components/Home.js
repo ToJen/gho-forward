@@ -18,7 +18,7 @@ import RequestLoanModal from "./RequestLoanModal/RequestLoanModal";
 import CustomTable from "./CustomTable/CustomTable";
 import { Tabs, TabList, TabPanels, Tab, TabPanel } from "@chakra-ui/react";
 import BorrowRequestsTable from "./BorrowRequests/BorrowRequestsTable";
-import { formatUnits } from "viem";
+import { formatUnits, parseUnits } from "viem";
 
 const API_KEY = "fKkSd21Z.e7WkHo51ArHiJor6QTOc5c2ND1j7dl9u";
 const SCORER_ID = 6351;
@@ -26,7 +26,7 @@ const SCORER_ID = 6351;
 const Home = () => {
   const { address, isConnected } = useAccount();
   const { setOpen } = useModal();
-  const { borrowRequestDetails, isLoading }= useGetBorrowRequests();
+  const { borrowRequestDetails, isLoading } = useGetBorrowRequests();
 
   const [gitcoinScore, setGitcoinScore] = useState(0);
   const [onChainScore, setOnChainScore] = useState(0);
@@ -42,8 +42,8 @@ const Home = () => {
   }, [isConnected]);
 
   useEffect(() => {
-    setTotalScore(gitcoinScore + onChainScore)
-  }, [onChainScore, gitcoinScore])
+    setTotalScore(gitcoinScore + onChainScore);
+  }, [onChainScore, gitcoinScore]);
 
   useEffect(() => {
     if (borrowRequestDetails && address) {
@@ -52,14 +52,14 @@ const Home = () => {
       borrowRequestDetails.map((row) => {
         if (row.user == address) {
           currBorrowed += formatUnits(row.amount);
-        } else if(row.fulfilledBy == address){
+        } else if (row.fulfilledBy == address) {
           currLoaned += formatUnits(row.amount);
         }
-      })
-      setTotalBorrowed(currBorrowed);
-      setTotalLoaned(currLoaned);
+      });
+      setTotalBorrowed(parseUnits(currBorrowed.toString(), 18));
+      setTotalLoaned(parseUnits(currLoaned.toString(), 18));
     }
-  }, [borrowRequestDetails])
+  }, [borrowRequestDetails]);
 
   const headers = API_KEY
     ? {
@@ -142,7 +142,7 @@ const Home = () => {
             flexDirection: "column",
             display: "flex",
             gap: "10px",
-            margin: "20px"
+            margin: "20px",
           }}
           flex={1}
         >
@@ -226,10 +226,17 @@ const Home = () => {
               <TabPanels>
                 <TabPanel>
                   <CustomTable tableHeading={"Assets to Lend"} />
-                  <BorrowRequestsTable borrowRequestDetails={borrowRequestDetails} isLoading={isLoading} filterUser={true}/>
+                  <BorrowRequestsTable
+                    borrowRequestDetails={borrowRequestDetails}
+                    isLoading={isLoading}
+                    filterUser={true}
+                  />
                 </TabPanel>
                 <TabPanel>
-                  <BorrowRequestsTable borrowRequestDetails={borrowRequestDetails} isLoading={isLoading} />
+                  <BorrowRequestsTable
+                    borrowRequestDetails={borrowRequestDetails}
+                    isLoading={isLoading}
+                  />
                 </TabPanel>
               </TabPanels>
             </Tabs>

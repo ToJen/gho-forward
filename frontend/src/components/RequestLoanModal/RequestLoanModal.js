@@ -1,5 +1,5 @@
 // import ABI from '../contracts/LoanFactoryABI.json'
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   useDisclosure,
   Button,
@@ -16,13 +16,17 @@ import {
 } from "@chakra-ui/react";
 import { useContractWrite, useAccount } from "wagmi";
 import GhoSafeAbi from "../../abis/ghoSafeContractAbi.json";
-import { GHO_SAFE_SEPOLIA, REPAY_TIME } from "../../utils/constants";
+import { GHO_SAFE_SEPOLIA } from "../../utils/constants";
 import { parseUnits } from "viem";
+import { getAllowedBorrowLimitDetails, timeConverter } from "../../utils/utils";
 
-const RequestLoanModal = () => {
+const RequestLoanModal = ({ gitcoinScore }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const [connectedAddress, setConnectedAddress] = useState(null);
+
+  const [borrowLimitDetails, setBorrowLimitDetails] = useState();
+  const [borrowAmount, setBorrowAmount] = useState();
   const { address } = useAccount();
+
   const {
     data: transactionDetails,
     isLoading,
@@ -34,15 +38,27 @@ const RequestLoanModal = () => {
     functionName: "createBorrowRequest",
   });
 
+  useEffect(() => {
+    getAllowedBorrowLimitDetails(address, null).then((data) => {
+      console.log("borrowLimitDetails", borrowLimitDetails);
+      setBorrowLimitDetails(data);
+    });
+  }, []);
   const onSubmit = () => {
-    if (!address) {
+    if (!address || !borrowLimitDetails) {
       return;
     }
     // TODO get amount, time based on scores
     // direct sending score is not safe, metatx?
     // TODO pass score here at the end
     write({
-      args: [address, parseUnits("1", 18), REPAY_TIME, 0, 0],
+      args: [
+        address,
+        parseUnits(borrowAmount, 18),
+        borrowLimitDetails.repayTime,
+        borrowLimitDetails.gitcoinScore,
+        borrowLimitDetails.onChainScore,
+      ],
     });
   };
   return (
@@ -50,32 +66,68 @@ const RequestLoanModal = () => {
       <Button onClick={onOpen} marginTop={"12vh"} backgroundColor={"#D2F7A9"}>
         Request Loan
       </Button>
+      {borrowLimitDetails && (
+        <Modal isOpen={isOpen} onClose={onClose}>
+          <ModalOverlay />
+          <ModalContent>
+            <ModalHeader>Request Loan</ModalHeader>
+            <ModalCloseButton />
+            <ModalBody pb={6}>
+              <FormControl>
+                <FormLabel>
+                  Based on your score, your max limit is{" "}
+                  {`(${borrowLimitDetails.borrowUpto} GHO)`}
+                </FormLabel>
+                <FormLabel>Borrow Amount </FormLabel>
+                <Input
+                  placeholder={` max. ${borrowLimitDetails.borrowUpto}`}
+                  type="number"
+                  onClick={(event) => {
+                    console.log("borrowAmount", borrowAmount);
+                    if (
+                      Number(event.target.value) >
+                      Number(borrowLimitDetails.borrowUpto)
+                    ) {
+                      return;
+                    }
 
-      <Modal isOpen={isOpen} onClose={onClose}>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>Request Loan</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody pb={6}>
-            <FormControl>
-              <FormLabel>First name</FormLabel>
-              <Input placeholder="First name" />
-            </FormControl>
+                    setBorrowAmount(event.target.value);
+                  }}
+                />
+              </FormControl>
 
-            <FormControl mt={4}>
-              <FormLabel>Last name</FormLabel>
-              <Input placeholder="Last name" />
-            </FormControl>
-          </ModalBody>
+              <FormControl mt={4}>
+                <FormLabel>Interest Rate</FormLabel>
+                <Input disabled value={2} />
+              </FormControl>
 
-          <ModalFooter>
-            <Button colorScheme="blue" mr={3} onClick={onSubmit}>
-              Submit
-            </Button>
-            <Button onClick={onClose}>Cancel</Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+              <FormControl mt={4}>
+                <FormLabel>Repay Time</FormLabel>
+                <Input
+                  disabled
+                  value={timeConverter(borrowLimitDetails.repayTime)}
+                />
+              </FormControl>
+
+              <FormControl mt={4}>
+                <FormLabel>Gitcoin Passport Score</FormLabel>
+                <Input disabled value={borrowLimitDetails.gitcoinScore} />
+              </FormControl>
+              <FormControl mt={4}>
+                <FormLabel>On Chain Score</FormLabel>
+                <Input disabled value={borrowLimitDetails.onChainScore} />
+              </FormControl>
+            </ModalBody>
+
+            <ModalFooter>
+              <Button colorScheme="blue" mr={3} onClick={onSubmit}>
+                Submit
+              </Button>
+              <Button onClick={onClose}>Cancel</Button>
+            </ModalFooter>
+          </ModalContent>
+        </Modal>
+      )}
     </>
   );
 };
