@@ -6,11 +6,13 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {ICreditDelegationToken} from "@aave/core-v3/contracts/interfaces/ICreditDelegationToken.sol";
 import {IERC20WithPermit} from "@aave/core-v3/contracts/interfaces/IERC20WithPermit.sol";
 import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
+import {IERC721} from "@openzeppelin/contracts/interfaces/IERC721.sol";
+import {IERC721Receiver} from "@openzeppelin/contracts/interfaces/IERC721Receiver.sol";
 import {IPool} from "@aave/core-v3/contracts/interfaces/IPool.sol";
 
 // 0x50C3357Bc7608f3ac2EA301De154e122EBeAc63E CD
 // 0xa7750fe3Bbc014077672a0eDe9C7C4a554A4B6a6, 1000000000000000000,0,0,0
-contract GhoSafe is ReentrancyGuard, Ownable {
+contract GhoSafe is IERC721Receiver, ReentrancyGuard, Ownable {
   struct BorrowRequest {
     address user;
     address fulfilledBy;
@@ -20,6 +22,8 @@ contract GhoSafe is ReentrancyGuard, Ownable {
     uint256 passportScore;
     uint256 onChainScore;
     bool hasRepayed;
+    // address collateralAddr;
+    // uint256 tokenId;
   }
 
   address public immutable DEBT_TOKEN;
@@ -58,11 +62,19 @@ contract GhoSafe is ReentrancyGuard, Ownable {
     uint256 _repayTime,
     uint256 _passportScore,
     uint256 _onChainScore
-  ) external {
+  ) external // bool withCollateral,
+  // address collateral721,
+  // uint256 tokenId
+  {
     if (userHasBorrowed[_user]) {
       revert BorrowLimitReached();
     }
     // addchecks based on credit score and amount requested
+    // address collateralToken;
+    // if (withCollateral) {
+    //   IERC721(collateral721).safeTransferFrom(msg.sender, address(this), tokenId);
+    //   collateralToken = collateral721;
+    // }
 
     borrowRequests[borrowRequestIndex] = BorrowRequest({
       user: _user,
@@ -73,6 +85,8 @@ contract GhoSafe is ReentrancyGuard, Ownable {
       passportScore: _passportScore,
       onChainScore: _onChainScore,
       hasRepayed: false
+      // collateralAddr: collateralToken,
+      // tokenId: tokenId // todo
     });
 
     emit BorrowRequestCreated(borrowRequestIndex++, _user, _amount);
@@ -212,13 +226,22 @@ contract GhoSafe is ReentrancyGuard, Ownable {
     emit BorrowRequestFulfilled(borrowRequestId, borrowRequests[borrowRequestId].user, address(this));
   }
 
-  // unprotected todo delete
-  function withdrawToken(uint256 borrowRequestId) public {
-    require(
-      IERC20(GHO_TOKEN).transfer(borrowRequests[borrowRequestId].user, borrowRequests[borrowRequestId].amount),
-      "Error Token"
-    );
+  function getBorrowReqeusts() public view returns (BorrowRequest[] memory) {
+    BorrowRequest[] memory requests = new BorrowRequest[](borrowRequestIndex);
+    for (uint256 i = 0; i < borrowRequestIndex; ++i) {
+      BorrowRequest storage br = borrowRequests[i];
+      requests[i] = br;
+    }
+    return requests;
   }
+
+  // todo
+  function onERC721Received(
+    address operator,
+    address from,
+    uint256 tokenId,
+    bytes calldata data
+  ) external returns (bytes4) {}
 
   function setInterestRateMode(uint256 _mode) external onlyOwner {
     interestRateMode = _mode;
