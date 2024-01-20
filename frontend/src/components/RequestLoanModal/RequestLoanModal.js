@@ -56,8 +56,8 @@ const RequestLoanModal = ({ gitcoinScore }) => {
         address,
         parseUnits(borrowAmount, 18),
         borrowLimitDetails.repayTime,
-        borrowLimitDetails.gitcoinScore,
-        borrowLimitDetails.onChainScore,
+        Math.floor(borrowLimitDetails.gitcoinScore),
+        Math.floor(borrowLimitDetails.onChainScore),
       ],
     });
   };
