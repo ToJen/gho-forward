@@ -34,3 +34,8 @@ pub struct LenderSignature {
     pub borrow_request_id: i32,
     pub signature: String,
 }
+
+#[derive(Deserialize)]
+pub struct SignatureQuery {
+    pub borrow_request_id: i32,
+}

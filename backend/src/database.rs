@@ -25,38 +25,45 @@ impl Database {
         Database { pool: result }
     }
 
-    pub fn get_events(&self) -> Vec<LenderSignature> {
+    pub fn get_signatures(&self) -> Vec<LenderSignature> {
         signatures
             .load::<LenderSignature>(&mut self.pool.get().unwrap())
-            .expect("Failed to get events.")
+            .expect("Failed to get signatures.")
     }
 
-    pub fn get_event(&self, find_id: i32) -> Option<LenderSignature> {
+    pub fn get_signature(&self, find_id: i32) -> Option<LenderSignature> {
         signatures
             .find(find_id)
             .first::<LenderSignature>(&mut self.pool.get().unwrap())
             .ok()
     }
 
-    pub fn create_event(
+    pub fn get_signature_by_borrower(&self, request_id: i32) -> Option<LenderSignature> {
+        signatures
+            .filter(borrow_request_id.eq(request_id))
+            .first::<LenderSignature>(&mut self.pool.get().unwrap())
+            .ok()
+    }
+
+    pub fn create_signature(
         &self,
-        event: NewLenderSignature,
+        data: NewLenderSignature,
     ) -> Result<LenderSignature, diesel::result::Error> {
         diesel::insert_into(signatures)
-            .values(&event)
+            .values(&data)
             .get_result(&mut self.pool.get().unwrap())
     }
 
-    pub fn delete_event(&self, find_id: i32) -> Result<usize, diesel::result::Error> {
-        diesel::delete(signatures.filter(id.eq(find_id))).execute(&mut self.pool.get().unwrap())
-    }
+    // pub fn delete_signature(&self, find_id: i32) -> Result<usize, diesel::result::Error> {
+    //     diesel::delete(signatures.filter(id.eq(find_id))).execute(&mut self.pool.get().unwrap())
+    // }
 
-    pub fn update_event(
-        &self,
-        event: LenderSignature,
-    ) -> Result<LenderSignature, diesel::result::Error> {
-        diesel::update(signatures.filter(id.eq(event.id)))
-            .set(&event)
-            .get_result(&mut self.pool.get().unwrap())
-    }
+    // pub fn update_signature(
+    //     &self,
+    //     data: LenderSignature,
+    // ) -> Result<LenderSignature, diesel::result::Error> {
+    //     diesel::update(signatures.filter(id.eq(data.id)))
+    //         .set(&data)
+    //         .get_result(&mut self.pool.get().unwrap())
+    // }
 }

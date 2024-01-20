@@ -13,9 +13,12 @@ diesel::table! {
     signatures (id) {
         id -> Int4,
         lender_address -> Text,
-        borrow_request_id -> Nullable<Int4>,
+        borrow_request_id -> Int4,
         signature -> Text,
     }
 }
 
-diesel::allow_tables_to_appear_in_same_query!(chats, signatures,);
+diesel::allow_tables_to_appear_in_same_query!(
+    chats,
+    signatures,
+);
