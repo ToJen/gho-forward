@@ -13,7 +13,7 @@ import GhoDebtTokenAbi from "../../abis/ghoDebtTokenAbi.json";
 import { splitSignature } from "ethers/lib/utils";
 
 // TODO pass approvalAmount
-const ApproveBorrowRequestButton = (approvalAmount) => {
+const ApproveBorrowRequestButton = ({ approvalAmount }) => {
   const { data: signature, signTypedData } = useSignTypedData();
   const { address } = useAccount();
   const {
@@ -48,7 +48,7 @@ const ApproveBorrowRequestButton = (approvalAmount) => {
       GHO_SAFE_SEPOLIA,
       userNonce,
       DEADLINE,
-      parseUnits("1", 18) //approvalAmount
+      approvalAmount
     );
     signTypedData(signatureParams);
   };
