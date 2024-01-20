@@ -1,10 +1,7 @@
 // import ABI from '../contracts/LoanFactoryABI.json'
 import React, { useEffect, useState } from "react";
 import { useModal } from "connectkit";
-import { useAccount, useDisconnect, useWalletClient } from "wagmi";
-import Compound from "../assets/compound-logo.png";
-import Sismo from "../assets/sismo-logo.png";
-import Push from "../assets/push-logo.jpeg";
+import { useAccount } from "wagmi";
 import { getBalances } from "../utils/utils";
 import {
   Box,
@@ -21,20 +18,20 @@ import RequestLoanModal from "./RequestLoanModal/RequestLoanModal";
 import CustomTable from "./CustomTable/CustomTable";
 import { Tabs, TabList, TabPanels, Tab, TabPanel } from "@chakra-ui/react";
 import BorrowRequestsTable from "./BorrowRequests/BorrowRequestsTable";
+import { formatUnits } from "viem";
 
-const EthInWei = 1000000000000000000;
 const API_KEY = "fKkSd21Z.e7WkHo51ArHiJor6QTOc5c2ND1j7dl9u";
 const SCORER_ID = 6351;
 
 const Home = () => {
   const { address, isConnected } = useAccount();
   const { setOpen } = useModal();
+  const { borrowRequestDetails, isLoading }= useGetBorrowRequests();
 
-  const { data: signer } = useWalletClient();
   const [score, setScore] = useState("");
   const [noScoreMessage, setNoScoreMessage] = useState("");
-  // const { lastBorrowRequestId, borrowRequestDetails } = useGetBorrowRequests();
-  // console.log("borrowRequestDetails", borrowRequestDetails);
+  const [totalBorrowed, setTotalBorrowed] = useState(0);
+  const [totalLoaned, setTotalLoaned] = useState(0);
 
   useEffect(() => {
     if (isConnected) {
@@ -42,19 +39,28 @@ const Home = () => {
     }
   }, [isConnected]);
 
+  useEffect(() => {
+    if (borrowRequestDetails && address) {
+      let currBorrowed = 0;
+      let currLoaned = 0;
+      borrowRequestDetails.map((row) => {
+        if (row.user == address) {
+          currBorrowed += formatUnits(row.amount);
+        } else if(row.fulfilledBy == address){
+          currLoaned += formatUnits(row.amount);
+        }
+      })
+      setTotalBorrowed(currBorrowed);
+      setTotalLoaned(currLoaned);
+    }
+  }, [borrowRequestDetails])
+
   const headers = API_KEY
     ? {
         "Content-Type": "application/json",
         "X-API-Key": API_KEY,
       }
     : undefined;
-
-  // submitting passport
-  const SUBMIT_PASSPORT_URI =
-    "https://api.scorer.gitcoin.co/registry/submit-passport";
-  // getting the signing message
-  const SIGNING_MESSAGE_URI =
-    "https://api.scorer.gitcoin.co/registry/signing-message";
 
   async function checkPassport(currentAddress = address) {
     console.log(`checking passport for ${currentAddress}`);
@@ -86,45 +92,6 @@ const Home = () => {
     }
   }
 
-  async function getSigningMessage() {
-    try {
-      const response = await fetch(SIGNING_MESSAGE_URI, {
-        headers,
-      });
-      const json = await response.json();
-      return json;
-    } catch (err) {
-      console.log("error: ", err);
-    }
-  }
-
-  async function submitPassport() {
-    setNoScoreMessage("");
-
-    if (!signer) return;
-    try {
-      const { message, nonce } = await getSigningMessage();
-      const signature = await signer.signMessage({ message });
-
-      console.log(signature);
-      const response = await fetch(SUBMIT_PASSPORT_URI, {
-        method: "POST",
-        headers,
-        body: JSON.stringify({
-          address,
-          scorer: SCORER_ID,
-          signature,
-          nonce,
-        }),
-      });
-
-      const data = await response.json();
-      console.log("data:", data);
-    } catch (err) {
-      console.log("error: ", err);
-    }
-  }
-
   return (
     <Box style={{ height: "100vh", backgroundColor: "#F5F5F5" }}>
       <header className="App-header">
@@ -144,7 +111,6 @@ const Home = () => {
                 backgroundColor: "#00FFFF",
                 borderRadius: "10px",
                 padding: "4px 8px",
-                color: "white",
                 maxWidth: "200px",
                 textOverflow: "ellipsis",
                 overflow: "hidden",
@@ -173,22 +139,6 @@ const Home = () => {
           }}
           flex={1}
         >
-          <Box className="intro">
-            <h3>Welcome to</h3>
-            <h1>Uncollaterised Loans</h1>
-            <h2>For Decentralised Finance</h2>
-            <h2>{score}</h2>
-            <h2>{noScoreMessage}</h2>
-            <Text>
-              Project X tries to solve the problem of overcollateralization in
-              DeFi. It uses your on-chain and off-chain information to create a
-              trust score and based on this trust score it decides whether you
-              are eligible for an uncollaterised loan or not. All this while
-              leveraging the power of zero knowledge proofs to make sure you
-              privacy is not compromised.
-            </Text>
-          </Box>
-
           <Box>
             <button
               onClick={async () => {
@@ -197,42 +147,6 @@ const Home = () => {
             >
               Get Balances
             </button>
-          </Box>
-          <Box className="powered-by">
-            <h4>Powered by:</h4>
-            <Box
-              style={{
-                display: "flex",
-                flexDirection: "row",
-                alignContent: "center",
-                justifyContent: "center",
-              }}
-            >
-              <a href="https://www.sismo.io/">
-                <img
-                  src={Sismo}
-                  height={50}
-                  width={90}
-                  style={{ marginInline: 20 }}
-                />
-              </a>
-              <a href="https://compound.finance/">
-                <img
-                  src={Compound}
-                  height={50}
-                  width={90}
-                  style={{ marginInline: 20 }}
-                />
-              </a>
-              <a href="https://push.org/">
-                <img
-                  src={Push}
-                  height={50}
-                  width={90}
-                  style={{ marginInline: 20 }}
-                />
-              </a>
-            </Box>
           </Box>
         </Box>
         <Box
@@ -259,18 +173,18 @@ const Home = () => {
             </Card>
             <Card width={"100%"}>
               <CardHeader>
-                <Text>Borrow Limit</Text>
+                <Text>Total Borrowed</Text>
               </CardHeader>
               <CardBody>
-                <Text>$5000</Text>
+                <Text>{totalBorrowed}</Text>
               </CardBody>
             </Card>
             <Card width={"100%"}>
               <CardHeader>
-                <Text>Borrow Limit</Text>
+                <Text>Total Loaned</Text>
               </CardHeader>
               <CardBody>
-                <Text>$5000</Text>
+                <Text>{totalLoaned}</Text>
               </CardBody>
             </Card>
           </Flex>
@@ -290,9 +204,10 @@ const Home = () => {
               <TabPanels>
                 <TabPanel>
                   <CustomTable tableHeading={"Assets to Lend"} />
+                  <BorrowRequestsTable borrowRequestDetails={borrowRequestDetails} isLoading={isLoading} filterUser={true}/>
                 </TabPanel>
                 <TabPanel>
-                  <BorrowRequestsTable tableHeading={"Borrow Requests"} />
+                  <BorrowRequestsTable borrowRequestDetails={borrowRequestDetails} isLoading={isLoading} />
                 </TabPanel>
               </TabPanels>
             </Tabs>

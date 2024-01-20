@@ -10,16 +10,14 @@ import {
   Box,
   Spinner,
 } from "@chakra-ui/react";
-import { useGetBorrowRequests } from "../../hooks/useGetBorrowRequests";
 import { truncateAddress } from "../../utils/utils";
 import { useAccount } from "wagmi";
 import ApproveBorrowRequestButton from "../ApproveBorrowRequest/ApproveBorrowRequestButton";
 import { formatUnits } from "viem";
 
-function BorrowRequestsTable() {
-  const { borrowRequestDetails, isLoading } = useGetBorrowRequests();
+function BorrowRequestsTable( { borrowRequestDetails = [], isLoading, filterUser=false }) {
   const { address } = useAccount();
-  console.log("data", borrowRequestDetails);
+  const tableData = filterUser ? borrowRequestDetails.filter((request) => request.user == address) : borrowRequestDetails;
   const col = [
     "Address",
     "On Chain Score",
@@ -33,7 +31,7 @@ function BorrowRequestsTable() {
   return (
     <Box>
       <Heading as="h4" size="md" margin={"20px 8px  20px"}>
-        Borrow Requests
+        {filterUser ? "My Borrowings/Credit Delegations" : "Borrow Requests"}
       </Heading>
 
       <TableContainer>
@@ -48,8 +46,8 @@ function BorrowRequestsTable() {
           <Tbody>
             {isLoading ? (
               <Spinner />
-            ) : borrowRequestDetails ? (
-              borrowRequestDetails.map((row) => (
+            ) : tableData ? (
+              tableData.map((row) => (
                 <Tr>
                   <Td>{truncateAddress(row.user)}</Td>
                   <Td>{Number(row.onChainScore)} </Td>

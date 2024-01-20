@@ -24,7 +24,7 @@ export const useGetBorrowRequests = () => {
   //   enabled: data != null,
   // });
   // const [lastBorrowRequestId, setLastBorrowRequestId] = useState(0);
-  const [borrowRequestDetails, setBorrowRequestDetails] = useState(0);
+  const [borrowRequestDetails, setBorrowRequestDetails] = useState([]);
 
   useEffect(() => {
     if (data == null || isError) {
