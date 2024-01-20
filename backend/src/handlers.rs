@@ -2,6 +2,7 @@ use crate::database::Database;
 use crate::models::{NewLenderSignature, SignatureQuery};
 use actix_web::{web, HttpResponse, Responder};
 use chrono::Utc;
+use serde::Deserialize;
 
 // pub async fn chat_handler(
 //     db: web::Data<Database>,
@@ -39,5 +40,75 @@ pub async fn get_signatures_handler(
     match db.get_signature_by_borrower(info.borrow_request_id) {
         Some(signature) => HttpResponse::Ok().json(signature),
         None => HttpResponse::NotFound().finish(),
+    }
+}
+
+// gitcoin passport endpoints
+#[derive(Deserialize)]
+pub struct PassportSubmission {
+    pub eth_address: String,
+}
+
+pub async fn submit_passport(data: web::Json<PassportSubmission>) -> impl Responder {
+    let api_url: String =
+        std::env::var("GITCOIN_PASSPORT_API_URL").expect("GITCOIN_PASSPORT_API_URL not set");
+    let api_key: String =
+        std::env::var("GITCOIN_PASSPORT_API_KEY").expect("GITCOIN_PASSPORT_API_KEY not set");
+    let scorer_id: String =
+        std::env::var("GITCOIN_PASSPORT_SCORER_ID").expect("GITCOIN_PASSPORT_SCORER_ID not set");
+
+    let submission_data = serde_json::json!({
+        "address": data.eth_address,
+        "scorer_id": scorer_id,
+    });
+
+    let client = reqwest::Client::new();
+    let res = client
+        .post(format!("{api_url}/submit-passport"))
+        .header("Content-Type", "application/json")
+        .header("X-API-KEY", api_key)
+        .json(&submission_data)
+        .send()
+        .await;
+
+    match res {
+        Ok(response) => {
+            let json_body = response.text().await.unwrap();
+            match serde_json::from_str::<serde_json::Value>(&json_body) {
+                Ok(json) => HttpResponse::Ok().json(json),
+                Err(_) => HttpResponse::InternalServerError().finish(),
+            }
+        }
+        Err(_) => HttpResponse::InternalServerError().finish(),
+    }
+}
+
+pub async fn get_passport_score(query: web::Query<PassportSubmission>) -> impl Responder {
+    let api_url: String =
+        std::env::var("GITCOIN_PASSPORT_API_URL").expect("GITCOIN_PASSPORT_API_URL not set");
+    let api_key: String =
+        std::env::var("GITCOIN_PASSPORT_API_KEY").expect("GITCOIN_PASSPORT_API_KEY not set");
+    let scorer_id: String =
+        std::env::var("GITCOIN_PASSPORT_SCORER_ID").expect("GITCOIN_PASSPORT_SCORER_ID not set");
+
+    let address = &query.eth_address;
+
+    let client = reqwest::Client::new();
+    let res = client
+        .get(format!("{api_url}/score/{scorer_id}/{}", *address))
+        .header("Content-Type", "application/json")
+        .header("X-API-KEY", api_key)
+        .send()
+        .await;
+
+    match res {
+        Ok(response) => {
+            let json_body = response.text().await.unwrap();
+            match serde_json::from_str::<serde_json::Value>(&json_body) {
+                Ok(json) => HttpResponse::Ok().json(json),
+                Err(_) => HttpResponse::InternalServerError().finish(),
+            }
+        }
+        Err(_) => HttpResponse::InternalServerError().finish(),
     }
 }
