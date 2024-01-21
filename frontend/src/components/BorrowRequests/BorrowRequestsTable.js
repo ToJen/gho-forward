@@ -59,6 +59,7 @@ function BorrowRequestsTable({
           borrowedAmount={borrowRequest.amount}
           borrowRequestId={borrowRequest.id}
           lenderAddress={isApprovedEntry.lender_address}
+          refetch={refetch}
           // signature={isApprovedEntry.signature}
         />
       );
@@ -71,6 +72,7 @@ function BorrowRequestsTable({
         borrowRequestId={borrowRequest.id}
         lenderAddress={isApprovedEntry.lender_address}
         signature={isApprovedEntry.signature}
+        refetch={refetch}
       />
     ) : (
       <Text>-</Text>
@@ -124,6 +126,7 @@ function BorrowRequestsTable({
                         approvalAmount={row.amount}
                         borrowRequestId={row.id}
                         lenderAddress={address}
+                        refetch={refetch}
                       />
                     )}
                   </Td>

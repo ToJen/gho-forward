@@ -16,6 +16,7 @@ const ClaimApprovedBorrowButton = ({
   borrowRequestId,
   lenderAddress,
   signature,
+  refetch
 }) => {
   const { address } = useAccount();
   const {
@@ -35,6 +36,19 @@ const ClaimApprovedBorrowButton = ({
     }
     //toast success
   });
+  
+  const {
+    data: txReceipt,
+    error: txError,
+    isLoading: txLoading,
+  } = useWaitForTransaction({ confirmations: 1, hash: transactionDetails?.hash });
+
+  useEffect(() => {
+    if(txReceipt){
+      refetch()
+    }
+  }, [txReceipt])
+
   const onSubmit = () => {
     if (!address || !signature) {
       return;
@@ -64,7 +78,7 @@ const ClaimApprovedBorrowButton = ({
     });
   };
   return (
-    <Button colorScheme="blue" mr={3} onClick={onSubmit} isLoading={isLoading}>
+    <Button colorScheme="blue" mr={3} onClick={onSubmit} isLoading={isLoading || txLoading}>
       Claim
     </Button>
   );

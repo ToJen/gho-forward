@@ -17,6 +17,7 @@ const ApproveBorrowRequestButton = ({
   approvalAmount,
   borrowRequestId,
   lenderAddress,
+  refetch,
 }) => {
   const { data: signature, signTypedData } = useSignTypedData();
   const { address } = useAccount();
@@ -44,10 +45,11 @@ const ApproveBorrowRequestButton = ({
     const splitSig = splitSignature(signature);
     console.log("splitSig", splitSig);
     // toast success
+    refetch()
     saveLenderSignature(lenderAddress, borrowRequestId, signature)
       .then(console.log)
       .catch(console.error);
-  });
+  }, [signature]);
 
   const saveLenderSignature = async (
     lenderAddress,

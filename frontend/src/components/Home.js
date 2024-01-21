@@ -268,6 +268,7 @@ const Home = () => {
                   <BorrowRequestsTable
                     borrowRequestDetails={borrowRequestDetails}
                     isLoading={isLoading}
+                    lenderSignatures={lenderSignatures}
                     refetch={refetch}
                   />
                 </TabPanel>
