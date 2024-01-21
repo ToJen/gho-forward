@@ -1,7 +1,7 @@
 // import ABI from '../contracts/LoanFactoryABI.json'
 import React, { useEffect, useState } from "react";
 import { useDisclosure, Button } from "@chakra-ui/react";
-import { useContractWrite, useAccount } from "wagmi";
+import { useContractWrite, useAccount, useWaitForTransaction } from "wagmi";
 import GhoSafeAbi from "../../abis/ghoSafeContractAbi.json";
 import { DEADLINE, GHO_SAFE_SEPOLIA } from "../../utils/constants";
 import { splitSignature } from "ethers/lib/utils";
