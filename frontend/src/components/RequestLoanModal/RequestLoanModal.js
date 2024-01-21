@@ -13,6 +13,7 @@ import {
   FormControl,
   FormLabel,
   Input,
+  Text,
 } from "@chakra-ui/react";
 import { useContractWrite, useAccount } from "wagmi";
 import GhoSafeAbi from "../../abis/ghoSafeContractAbi.json";
@@ -25,6 +26,7 @@ const RequestLoanModal = ({ gitcoinScore }) => {
 
   const [borrowLimitDetails, setBorrowLimitDetails] = useState();
   const [borrowAmount, setBorrowAmount] = useState();
+  const [showError, setShowError] = useState(false);
   const { address } = useAccount();
 
   const {
@@ -48,12 +50,16 @@ const RequestLoanModal = ({ gitcoinScore }) => {
     if (!address || !borrowLimitDetails || !borrowAmount) {
       return;
     }
+    if (Number(borrowAmount) > Number(borrowLimitDetails.borrowUpto)) {
+      setShowError(true);
+      return;
+    }
     // TODO get amount, time based on scores
     // direct sending score is not safe, metatx?
     // TODO pass score here at the end
     write({
       args: [
-        parseUnits("10", 18),
+        parseUnits(borrowAmount.toString(), 18),
         borrowLimitDetails.repayTime,
         Math.floor(borrowLimitDetails.gitcoinScore),
         Math.floor(borrowLimitDetails.onChainScore),
@@ -81,18 +87,12 @@ const RequestLoanModal = ({ gitcoinScore }) => {
                 <Input
                   placeholder={` max. ${borrowLimitDetails.borrowUpto}`}
                   type="number"
-                  onClick={(event) => {
-                    console.log("borrowAmount", borrowAmount);
-                    // if (
-                    //   Number(event.target.value) >
-                    //   Number(borrowLimitDetails.borrowUpto)
-                    // ) {
-                    //   return;
-                    // }
-                    console.log("setBorrowAmount", event.target.value);
-                    setBorrowAmount(Number(event.target.value));
+                  onChange={(e) => {
+                    setBorrowAmount(e.target.value);
+                    setShowError(false);
                   }}
                 />
+                {showError && <Text color="Red">Borrow Limit Exceeded</Text>}
               </FormControl>
 
               <FormControl mt={4}>

@@ -37,5 +37,5 @@ pub struct LenderSignature {
 
 #[derive(Deserialize)]
 pub struct SignatureQuery {
-    pub borrow_request_id: i32,
+    pub borrow_request_id: Option<i32>,
 }
