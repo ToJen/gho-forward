@@ -45,7 +45,7 @@ const RequestLoanModal = ({ gitcoinScore }) => {
     });
   }, []);
   const onSubmit = () => {
-    if (!address || !borrowLimitDetails) {
+    if (!address || !borrowLimitDetails || !borrowAmount) {
       return;
     }
     // TODO get amount, time based on scores
@@ -53,8 +53,7 @@ const RequestLoanModal = ({ gitcoinScore }) => {
     // TODO pass score here at the end
     write({
       args: [
-        address,
-        parseUnits(borrowAmount, 18),
+        parseUnits("10", 18),
         borrowLimitDetails.repayTime,
         Math.floor(borrowLimitDetails.gitcoinScore),
         Math.floor(borrowLimitDetails.onChainScore),
@@ -84,14 +83,14 @@ const RequestLoanModal = ({ gitcoinScore }) => {
                   type="number"
                   onClick={(event) => {
                     console.log("borrowAmount", borrowAmount);
-                    if (
-                      Number(event.target.value) >
-                      Number(borrowLimitDetails.borrowUpto)
-                    ) {
-                      return;
-                    }
-
-                    setBorrowAmount(event.target.value);
+                    // if (
+                    //   Number(event.target.value) >
+                    //   Number(borrowLimitDetails.borrowUpto)
+                    // ) {
+                    //   return;
+                    // }
+                    console.log("setBorrowAmount", event.target.value);
+                    setBorrowAmount(Number(event.target.value));
                   }}
                 />
               </FormControl>

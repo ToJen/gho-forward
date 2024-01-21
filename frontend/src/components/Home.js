@@ -20,7 +20,6 @@ import { Tabs, TabList, TabPanels, Tab, TabPanel } from "@chakra-ui/react";
 import BorrowRequestsTable from "./BorrowRequests/BorrowRequestsTable";
 import { formatUnits, parseUnits } from "viem";
 
-
 const Home = () => {
   const { address, isConnected } = useAccount();
   const { setOpen } = useModal();
@@ -31,12 +30,14 @@ const Home = () => {
   const [totalScore, setTotalScore] = useState(0);
   const [totalBorrowed, setTotalBorrowed] = useState(0);
   const [totalLoaned, setTotalLoaned] = useState(0);
+  const [lenderSignatures, setLenderSignatures] = useState([]);
   const [borrowLimitDetails, setBorrowLimitDetails] = useState();
 
   useEffect(() => {
     if (isConnected) {
       checkPassport();
       getOnChainScore();
+      fetchSavedLenderSignature();
     }
   }, [isConnected]);
 
@@ -89,6 +90,26 @@ const Home = () => {
       console.log("error: ", err);
     }
   }
+  const fetchSavedLenderSignature = async () => {
+    const uri = `${process.env.REACT_APP_SERVER_URL}/signatures`;
+
+    try {
+      const response = await fetch(uri, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      const lenderSignatureData = await response.json();
+      console.log("retrieved lenderSignatureData:", lenderSignatureData);
+
+      if (lenderSignatureData?.length > 0) {
+        setLenderSignatures(lenderSignatureData);
+      }
+    } catch (err) {
+      console.log("error fetching lenderSignatureData:", err);
+    }
+  };
 
   async function getOnChainScore() {
     const borrowLimits = await getAllowedBorrowLimitDetails(
@@ -239,6 +260,7 @@ const Home = () => {
                     borrowRequestDetails={borrowRequestDetails}
                     isLoading={isLoading}
                     filterUser={true}
+                    lenderSignatures={lenderSignatures}
                   />
                 </TabPanel>
                 <TabPanel>

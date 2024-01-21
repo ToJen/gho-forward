@@ -4,7 +4,7 @@ import { useDisclosure, Button } from "@chakra-ui/react";
 import { useContractWrite, useAccount } from "wagmi";
 import GhoSafeAbi from "../../abis/ghoSafeContractAbi.json";
 import { DEADLINE, GHO_SAFE_SEPOLIA } from "../../utils/constants";
-
+import { splitSignature } from "ethers/lib/utils";
 //
 // const claimBorrowParams = {
 //   borrowRequestId: 0,
@@ -12,9 +12,11 @@ import { DEADLINE, GHO_SAFE_SEPOLIA } from "../../utils/constants";
 //   deadline: DEADLINE, // TODO
 //   signature: {},
 // };
-const ClaimApprovedBorrowButton = (claimBorrowParams) => {
-  const { isOpen, onOpen, onClose } = useDisclosure();
-  const [connectedAddress, setConnectedAddress] = useState(null);
+const ClaimApprovedBorrowButton = ({
+  borrowRequestId,
+  lenderAddress,
+  signature,
+}) => {
   const { address } = useAccount();
   const {
     data: transactionDetails,
@@ -34,15 +36,18 @@ const ClaimApprovedBorrowButton = (claimBorrowParams) => {
     //toast success
   });
   const onSubmit = () => {
-    if (!address || Object.keys(claimBorrowParams).length == 0) {
+    if (!address || !signature) {
       return;
     }
     const claimBorrowParamTest = {
-      borrowRequestId: 0,
-      delegator: "", // lender address that approved the borrow request, signature address
+      borrowRequestId: borrowRequestId,
+      delegator: lenderAddress, // lender address that approved the borrow request, signature address
       deadline: DEADLINE, // TODO
-      signature: {},
+      signature: splitSignature(signature),
+      delegatee: address,
     };
+    console.log("claimBorrowParamTest", claimBorrowParamTest);
+    console.log("address", address);
     write({
       // TODO remove testing flags
       args: [
@@ -59,16 +64,9 @@ const ClaimApprovedBorrowButton = (claimBorrowParams) => {
     });
   };
   return (
-    <>
-      <Button
-        colorScheme="blue"
-        mr={3}
-        onClick={onSubmit}
-        isLoading={isLoading}
-      >
-        Submit
-      </Button>
-    </>
+    <Button colorScheme="blue" mr={3} onClick={onSubmit} isLoading={isLoading}>
+      Claim
+    </Button>
   );
 };
 

@@ -13,7 +13,11 @@ import GhoDebtTokenAbi from "../../abis/ghoDebtTokenAbi.json";
 import { splitSignature } from "ethers/lib/utils";
 
 // TODO pass approvalAmount
-const ApproveBorrowRequestButton = ({ approvalAmount, borrowRequestId, lenderAddress }) => {
+const ApproveBorrowRequestButton = ({
+  approvalAmount,
+  borrowRequestId,
+  lenderAddress,
+}) => {
   const { data: signature, signTypedData } = useSignTypedData();
   const { address } = useAccount();
 
@@ -41,11 +45,15 @@ const ApproveBorrowRequestButton = ({ approvalAmount, borrowRequestId, lenderAdd
     console.log("splitSig", splitSig);
     // toast success
     saveLenderSignature(lenderAddress, borrowRequestId, signature)
-        .then(console.log)
-        .catch(console.error);
+      .then(console.log)
+      .catch(console.error);
   });
 
-  const saveLenderSignature = async (lenderAddress, borrowRequestId, signature) => {
+  const saveLenderSignature = async (
+    lenderAddress,
+    borrowRequestId,
+    signature
+  ) => {
     const uri = `${SERVER_URL}/signatures`;
 
     try {
@@ -53,10 +61,10 @@ const ApproveBorrowRequestButton = ({ approvalAmount, borrowRequestId, lenderAdd
         headers: {
           "Content-Type": "application/json",
         },
-        method: 'POST',
+        method: "POST",
         body: JSON.stringify({
-          lenderAddress: lenderAddress,
-          borrowRequestId: borrowRequestId,
+          lender_address: lenderAddress,
+          borrow_request_id: Number(borrowRequestId),
           signature: signature,
         }),
       });
@@ -64,8 +72,7 @@ const ApproveBorrowRequestButton = ({ approvalAmount, borrowRequestId, lenderAdd
       const newLenderSignature = await response.json();
       console.log("newLenderSignature:", newLenderSignature);
       return newLenderSignature;
-    }
-    catch (err) {
+    } catch (err) {
       console.log("error saving newLenderSignature:", err);
     }
   };

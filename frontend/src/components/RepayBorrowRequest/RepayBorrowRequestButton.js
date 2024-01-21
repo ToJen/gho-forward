@@ -16,18 +16,20 @@ import {
   GHO_TOKEN_ADDR_SEPOLIA,
 } from "../../utils/constants";
 import { Pool } from "@aave/contract-helpers";
-import { parseUnits } from "viem";
+import { formatUnits, parseUnits } from "viem";
 
 import AavePoolAbi from "../../abis/aavePoolAbi.json";
 import { splitSignature } from "ethers/lib/utils";
 const ethers = require("ethers");
 
-// TODO pass borrowRequestId, borrowedAmount
-const brwAmount = parseUnits("1");
-const RepayBorrowRequestButton = (borrowRequestId, borrowedAmount) => {
+const RepayBorrowRequestButton = ({
+  borrowRequestId,
+  borrowedAmount,
+  lenderAddress,
+}) => {
   const { data: signature, signTypedData } = useSignTypedData();
   const { address } = useAccount();
-  const {lenderSignature, setLenderSignature} = useState();
+  const { lenderSignature, setLenderSignature } = useState();
 
   const {
     data: transactionDetails,
@@ -41,17 +43,17 @@ const RepayBorrowRequestButton = (borrowRequestId, borrowedAmount) => {
   });
 
   useEffect(() => {
-    if (signature == null) {
+    if (signature == null || !borrowedAmount) {
       return;
     }
     const splitSig = splitSignature(signature);
     console.log("splitSig", splitSig);
 
     const repayParams = {
-      borrowRequestId: 0,
+      borrow_request_id: borrowRequestId,
       deadline: DEADLINE,
-      amount: parseUnits("1", 18),
-      lendersAddress: "0x32D1C9FFee079d6FD8E0d0E77aD5644DDdb3d95a", // TODO lender address get from borrow request
+      amount: borrowedAmount,
+      lendersAddress: lenderAddress, // TODO lender address get from borrow request
       signature: { v: splitSig.v, r: splitSig.r, s: splitSig.s },
     };
 
@@ -59,7 +61,7 @@ const RepayBorrowRequestButton = (borrowRequestId, borrowedAmount) => {
       args: [
         GHO_TOKEN_ADDR_SEPOLIA,
         repayParams.amount,
-        2,
+        2, //interest mode
         repayParams.lendersAddress,
         repayParams.deadline,
         repayParams.signature.v,
@@ -92,32 +94,11 @@ const RepayBorrowRequestButton = (borrowRequestId, borrowedAmount) => {
     const approvalMsg = await pool.signERC20Approval({
       user: address,
       reserve: GHO_TOKEN_ADDR_SEPOLIA,
-      amount: parseUnits("1"), // TODO
+      amount: parseUnits(formatUnits(borrowedAmount, 18)), // TODO
       deadline: DEADLINE, // determined by GHO_SAFE
     });
     const signatureParams = JSON.parse(approvalMsg);
     signTypedData(signatureParams);
-  };
-
-  const fetchSavedLenderSignature = async () => {
-    const uri = `${process.env.REACT_APP_SERVER_URL}/signatures?borrow_request_id=${borrowRequestId}`;
-
-    try {
-      const response = await fetch(uri, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
-      const lenderSignatureData = await response.json();
-      console.log("retrieved lenderSignatureData:", lenderSignatureData);
-
-      if (lenderSignatureData.signature) {
-        setLenderSignature(signature);
-      }
-    } catch (err) {
-      console.log("error fetching lenderSignatureData:", err);
-    }
   };
 
   return (
@@ -126,8 +107,7 @@ const RepayBorrowRequestButton = (borrowRequestId, borrowedAmount) => {
         colorScheme="blue"
         mr={3}
         onClick={async () => {
-          await signMessage()
-          await fetchSavedLenderSignature()
+          await signMessage();
         }}
         //isLoading={nonceIsLoading}
       >
