@@ -38,7 +38,7 @@ const Home = () => {
       checkPassport();
       getOnChainScore();
     }
-  }, [isConnected, gitcoinScore]);
+  }, [isConnected]);
 
   useEffect(() => {
     if (borrowRequestDetails && address) {
