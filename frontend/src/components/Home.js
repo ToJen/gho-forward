@@ -20,8 +20,6 @@ import { Tabs, TabList, TabPanels, Tab, TabPanel } from "@chakra-ui/react";
 import BorrowRequestsTable from "./BorrowRequests/BorrowRequestsTable";
 import { formatUnits, parseUnits } from "viem";
 
-const API_KEY = "fKkSd21Z.e7WkHo51ArHiJor6QTOc5c2ND1j7dl9u";
-const SCORER_ID = 6351;
 
 const Home = () => {
   const { address, isConnected } = useAccount();
@@ -40,12 +38,13 @@ const Home = () => {
       checkPassport();
       getOnChainScore();
     }
-  }, [isConnected]);
+  }, [isConnected, gitcoinScore]);
 
   useEffect(() => {
     if (borrowRequestDetails && address) {
       let currBorrowed = 0;
       let currLoaned = 0;
+
       borrowRequestDetails.map((row) => {
         if (row.user == address) {
           currBorrowed += formatUnits(row.amount);
@@ -53,34 +52,36 @@ const Home = () => {
           currLoaned += formatUnits(row.amount);
         }
       });
+
       setTotalBorrowed(parseUnits(currBorrowed.toString(), 18));
       setTotalLoaned(parseUnits(currLoaned.toString(), 18));
     }
   }, [borrowRequestDetails, address]);
 
-  const headers = API_KEY
-    ? {
-        "Content-Type": "application/json",
-        "X-API-Key": API_KEY,
-      }
-    : undefined;
-
   async function checkPassport(currentAddress = address) {
     console.log(`checking passport for ${currentAddress}`);
     setGitcoinScore(0);
 
-    const GET_PASSPORT_SCORE_URI = `https://api.scorer.gitcoin.co/registry/score/${SCORER_ID}/${currentAddress}`;
+    const uri = `${process.env.REACT_APP_SERVER_URL}/get_passport_score?eth_address=${currentAddress}`;
+    // const uri = `${process.env.REACT_APP_SERVER_URL}/submit_passport`;
 
     try {
-      const response = await fetch(GET_PASSPORT_SCORE_URI, {
-        headers,
+      const response = await fetch(uri, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        // method: 'POST',
+        // body: JSON.stringify({
+        //   eth_address: currentAddress,
+        // })
       });
+
       const passportData = await response.json();
       console.log("passportData: ", passportData);
 
       if (passportData.score) {
         const roundedScore = Math.round(passportData.score * 100) / 100;
-        setGitcoinScore(roundedScore.toString());
+        setGitcoinScore(roundedScore);
       } else {
         setGitcoinScore(0);
       }
@@ -227,7 +228,7 @@ const Home = () => {
           >
             <Tabs variant="enclosed">
               <TabList>
-                <Tab>View All</Tab>
+                <Tab>Open Supply Positions</Tab>
                 <Tab>Borrow Requests</Tab>
               </TabList>
               <TabPanels>

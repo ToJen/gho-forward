@@ -54,8 +54,8 @@ function BorrowRequestsTable({
             {isLoading ? (
               <Spinner />
             ) : tableData ? (
-              tableData.map((row) => (
-                <Tr>
+              tableData.map((row, index) => (
+                <Tr key={index}>
                   <Td>{truncateAddress(row.user)}</Td>
                   <Td>{Number(row.onChainScore)} </Td>
                   <Td>{Number(row.passportScore)} </Td>
@@ -78,7 +78,11 @@ function BorrowRequestsTable({
                     {address == row.user ? (
                       "-"
                     ) : (
-                      <ApproveBorrowRequestButton approvalAmount={row.amount} />
+                      <ApproveBorrowRequestButton
+                          approvalAmount={row.amount}
+                          borrowRequestId={index}
+                          lenderAddress={address}
+                      />
                     )}
                   </Td>
                 </Tr>

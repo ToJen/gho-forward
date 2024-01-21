@@ -13,9 +13,10 @@ import GhoDebtTokenAbi from "../../abis/ghoDebtTokenAbi.json";
 import { splitSignature } from "ethers/lib/utils";
 
 // TODO pass approvalAmount
-const ApproveBorrowRequestButton = ({ approvalAmount }) => {
+const ApproveBorrowRequestButton = ({ approvalAmount, borrowRequestId, lenderAddress }) => {
   const { data: signature, signTypedData } = useSignTypedData();
   const { address } = useAccount();
+
   const {
     data: userNonce,
     isError: nonceIsError,
@@ -27,7 +28,10 @@ const ApproveBorrowRequestButton = ({ approvalAmount }) => {
     args: [address],
     enabled: !!address,
   });
+
   console.log("account", address);
+
+  const SERVER_URL = `${process.env.REACT_APP_SERVER_URL}`;
 
   useEffect(() => {
     if (signature == null) {
@@ -36,8 +40,36 @@ const ApproveBorrowRequestButton = ({ approvalAmount }) => {
     const splitSig = splitSignature(signature);
     console.log("splitSig", splitSig);
     // toast success
-    // TODO store in api
+    saveLenderSignature(lenderAddress, borrowRequestId, signature)
+        .then(console.log)
+        .catch(console.error);
   });
+
+  const saveLenderSignature = async (lenderAddress, borrowRequestId, signature) => {
+    const uri = `${SERVER_URL}/signatures`;
+
+    try {
+      const response = await fetch(uri, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        method: 'POST',
+        body: JSON.stringify({
+          lenderAddress: lenderAddress,
+          borrowRequestId: borrowRequestId,
+          signature: signature,
+        }),
+      });
+
+      const newLenderSignature = await response.json();
+      console.log("newLenderSignature:", newLenderSignature);
+      return newLenderSignature;
+    }
+    catch (err) {
+      console.log("error saving newLenderSignature:", err);
+    }
+  };
+
   const signMessage = async () => {
     if (nonceIsLoading || nonceIsError) {
       console.log("nonceIsError", nonceIsError);
@@ -52,6 +84,7 @@ const ApproveBorrowRequestButton = ({ approvalAmount }) => {
     );
     signTypedData(signatureParams);
   };
+
   return (
     <>
       <Button

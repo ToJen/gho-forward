@@ -27,6 +27,7 @@ const brwAmount = parseUnits("1");
 const RepayBorrowRequestButton = (borrowRequestId, borrowedAmount) => {
   const { data: signature, signTypedData } = useSignTypedData();
   const { address } = useAccount();
+  const {lenderSignature, setLenderSignature} = useState();
 
   const {
     data: transactionDetails,
@@ -97,12 +98,37 @@ const RepayBorrowRequestButton = (borrowRequestId, borrowedAmount) => {
     const signatureParams = JSON.parse(approvalMsg);
     signTypedData(signatureParams);
   };
+
+  const fetchSavedLenderSignature = async () => {
+    const uri = `${process.env.REACT_APP_SERVER_URL}/signatures?borrow_request_id=${borrowRequestId}`;
+
+    try {
+      const response = await fetch(uri, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      const lenderSignatureData = await response.json();
+      console.log("retrieved lenderSignatureData:", lenderSignatureData);
+
+      if (lenderSignatureData.signature) {
+        setLenderSignature(signature);
+      }
+    } catch (err) {
+      console.log("error fetching lenderSignatureData:", err);
+    }
+  };
+
   return (
     <>
       <Button
         colorScheme="blue"
         mr={3}
-        onClick={signMessage}
+        onClick={async () => {
+          await signMessage()
+          await fetchSavedLenderSignature()
+        }}
         //isLoading={nonceIsLoading}
       >
         Repay
