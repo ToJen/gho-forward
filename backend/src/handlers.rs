@@ -1,7 +1,6 @@
 use crate::database::Database;
 use crate::models::{NewLenderSignature, SignatureQuery};
 use actix_web::{web, HttpResponse, Responder};
-use chrono::Utc;
 use serde::Deserialize;
 
 // pub async fn chat_handler(
@@ -36,10 +35,15 @@ pub async fn get_signatures_handler(
     db: web::Data<Database>,
     web::Query(info): web::Query<SignatureQuery>,
 ) -> impl Responder {
-    // Use db to fetch signature based on borrowRequestId
-    match db.get_signature_by_borrower(info.borrow_request_id) {
-        Some(signature) => HttpResponse::Ok().json(signature),
-        None => HttpResponse::NotFound().finish(),
+    match info.borrow_request_id {
+        Some(id) => match db.get_signature_by_borrower(id) {
+            Some(signature) => HttpResponse::Ok().json(signature),
+            None => HttpResponse::NotFound().finish(),
+        },
+        None => {
+            let signatures = db.get_signatures();
+            HttpResponse::Ok().json(signatures)
+        }
     }
 }
 
