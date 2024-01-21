@@ -9,22 +9,28 @@ import {
   Heading,
   Tooltip,
   Box,
+  Text,
   Spinner,
 } from "@chakra-ui/react";
 import { timeConverter, truncateAddress } from "../../utils/utils";
 import { useAccount } from "wagmi";
 import ApproveBorrowRequestButton from "../ApproveBorrowRequest/ApproveBorrowRequestButton";
 import { formatUnits } from "viem";
+import ClaimApprovedBorrowButton from "../ClaimApprovedBorrow/ClaimApprovedBorrowButton";
+import RepayBorrowRequestButton from "../RepayBorrowRequest/RepayBorrowRequestButton";
+import RepayBorrowRequestButton2 from "../RepayBorrowRequest/RepayBorrowRequestButton2";
 
 function BorrowRequestsTable({
   borrowRequestDetails = [],
   isLoading,
   filterUser = false,
+  lenderSignatures = [],
 }) {
   const { address } = useAccount();
   const tableData = filterUser
     ? borrowRequestDetails.filter((request) => request.user == address)
     : borrowRequestDetails;
+
   const col = [
     "Address",
     "On Chain Score",
@@ -35,6 +41,41 @@ function BorrowRequestsTable({
     "Status",
     "Action",
   ];
+
+  const renderClaimButton = (borrowRequest) => {
+    console.log("borrowRequest", borrowRequest);
+    console.log("lenderSignatures", lenderSignatures);
+    const isApprovedEntry = lenderSignatures.find(
+      (lS) => lS.borrow_request_id == borrowRequest.id
+    );
+    // check if borrow req is claimed
+    if (
+      borrowRequest.fulfilledBy !=
+        "0x0000000000000000000000000000000000000000" &&
+      isApprovedEntry
+    ) {
+      return (
+        <RepayBorrowRequestButton
+          borrowedAmount={borrowRequest.amount}
+          borrowRequestId={borrowRequest.id}
+          lenderAddress={isApprovedEntry.lender_address}
+          // signature={isApprovedEntry.signature}
+        />
+      );
+    }
+
+    console.log("isApprovedEntry", isApprovedEntry);
+    return isApprovedEntry != null ? (
+      <ClaimApprovedBorrowButton
+        approvalAmount={borrowRequest.amount}
+        borrowRequestId={borrowRequest.id}
+        lenderAddress={isApprovedEntry.lender_address}
+        signature={isApprovedEntry.signature}
+      />
+    ) : (
+      <Text>-</Text>
+    );
+  };
   return (
     <Box>
       <Heading as="h4" size="md" margin={"20px 8px  20px"}>
@@ -65,10 +106,10 @@ function BorrowRequestsTable({
                   <Td>
                     {truncateAddress(row.fulfilledBy) ? (
                       <Tooltip
-                        label="Hey, I'm here!"
-                        aria-label={`${truncateAddress(row.fulfilledBy)}`}
+                        label={`by ${truncateAddress(row.fulfilledBy)}`}
+                        aria-label={`by ${truncateAddress(row.fulfilledBy)}`}
                       >
-                        "Fulfilled"
+                        Fulfilled
                       </Tooltip>
                     ) : (
                       "Open"
@@ -76,12 +117,13 @@ function BorrowRequestsTable({
                   </Td>
                   <Td>
                     {address == row.user ? (
-                      "-"
+                      // Show claim button if there is signature
+                      renderClaimButton(row)
                     ) : (
                       <ApproveBorrowRequestButton
-                          approvalAmount={row.amount}
-                          borrowRequestId={index}
-                          lenderAddress={address}
+                        approvalAmount={row.amount}
+                        borrowRequestId={row.id}
+                        lenderAddress={address}
                       />
                     )}
                   </Td>

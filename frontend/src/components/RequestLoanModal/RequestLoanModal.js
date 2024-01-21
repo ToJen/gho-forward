@@ -47,11 +47,11 @@ const RequestLoanModal = ({ gitcoinScore }) => {
     });
   }, []);
   const onSubmit = () => {
-    if (!address || !borrowLimitDetails) {
+    if (!address || !borrowLimitDetails || !borrowAmount) {
       return;
     }
-    if(Number(borrowAmount) > Number(borrowLimitDetails.borrowUpto)){
-      setShowError(true)
+    if (Number(borrowAmount) > Number(borrowLimitDetails.borrowUpto)) {
+      setShowError(true);
       return;
     }
     // TODO get amount, time based on scores
@@ -59,8 +59,7 @@ const RequestLoanModal = ({ gitcoinScore }) => {
     // TODO pass score here at the end
     write({
       args: [
-        address,
-        parseUnits(borrowAmount, 18),
+        parseUnits(borrowAmount.toString(), 18),
         borrowLimitDetails.repayTime,
         Math.floor(borrowLimitDetails.gitcoinScore),
         Math.floor(borrowLimitDetails.onChainScore),
@@ -84,13 +83,13 @@ const RequestLoanModal = ({ gitcoinScore }) => {
                   Based on your score, your max limit is{" "}
                   {`${borrowLimitDetails.borrowUpto} GHO`}
                 </FormLabel>
-                <FormLabel>Borrow Amount </FormLabel>
+                <FormLabel>Borrow Amount (in GHO)</FormLabel>
                 <Input
                   placeholder={` max. ${borrowLimitDetails.borrowUpto}`}
                   type="number"
                   onChange={(e) => {
-                    setBorrowAmount(e.target.value)
-                    setShowError(false)
+                    setBorrowAmount(e.target.value);
+                    setShowError(false);
                   }}
                 />
                 {showError && <Text color="Red">Borrow Limit Exceeded</Text>}
