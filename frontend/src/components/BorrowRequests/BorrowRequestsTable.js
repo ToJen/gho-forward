@@ -25,6 +25,7 @@ function BorrowRequestsTable({
   isLoading,
   filterUser = false,
   lenderSignatures = [],
+  refetch,
 }) {
   const { address } = useAccount();
   const tableData = filterUser
