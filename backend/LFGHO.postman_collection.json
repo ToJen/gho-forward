@@ -1,0 +1,110 @@
+{
+	"info": {
+		"_postman_id": "747ce956-8609-4d0b-827f-5c3450d1a2ed",
+		"name": "LFGHO",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "32467841"
+	},
+	"item": [
+		{
+			"name": "Submit Passport",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"eth_address\": \"0x57852c7F14C629DE3504ad8ba1E9898296f5ff56\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "https://lfgho-backend.onrender.com/submit_passport"
+			},
+			"response": []
+		},
+		{
+			"name": "Get Passport Score",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://lfgho-backend.onrender.com/get_passport_score?eth_address=0x57852c7F14C629DE3504ad8ba1E9898296f5ff56",
+					"protocol": "https",
+					"host": [
+						"lfgho-backend",
+						"onrender",
+						"com"
+					],
+					"path": [
+						"get_passport_score"
+					],
+					"query": [
+						{
+							"key": "eth_address",
+							"value": "0x57852c7F14C629DE3504ad8ba1E9898296f5ff56"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Fetch signature by borrow_request_id",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://lfgho-backend.onrender.com/signatures?borrow_request_id=1",
+					"protocol": "https",
+					"host": [
+						"lfgho-backend",
+						"onrender",
+						"com"
+					],
+					"path": [
+						"signatures"
+					],
+					"query": [
+						{
+							"key": "borrow_request_id",
+							"value": "1"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Save Lender Signature",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"lender_address\": \"0x123\",\n    \"borrow_request_id\": 1,\n    \"signature\": \"ljnfldls\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "https://lfgho-backend.onrender.com/signatures"
+			},
+			"response": []
+		}
+	]
+}
