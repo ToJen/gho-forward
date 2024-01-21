@@ -15,14 +15,14 @@ import {
   Input,
   Text,
 } from "@chakra-ui/react";
-import { useContractWrite, useAccount } from "wagmi";
+import { useContractWrite, useAccount, useWaitForTransaction } from "wagmi";
 import GhoSafeAbi from "../../abis/ghoSafeContractAbi.json";
 import { GHO_SAFE_SEPOLIA } from "../../utils/constants";
 import { parseUnits } from "viem";
 import { getAllowedBorrowLimitDetails, timeConverter } from "../../utils/utils";
 
-const RequestLoanModal = ({ gitcoinScore }) => {
-  const { isOpen, onOpen, onClose } = useDisclosure();
+const RequestLoanModal = ({ refetch }) => {
+  const { isOpen, onOpen, onClose } = useDisclosure();  
 
   const [borrowLimitDetails, setBorrowLimitDetails] = useState();
   const [borrowAmount, setBorrowAmount] = useState();
@@ -39,6 +39,12 @@ const RequestLoanModal = ({ gitcoinScore }) => {
     abi: GhoSafeAbi,
     functionName: "createBorrowRequest",
   });
+
+  const {
+    data: txReceipt,
+    error: txError,
+    isLoading: txLoading,
+  } = useWaitForTransaction({ confirmations: 1, hash: transactionDetails?.hash });
 
   useEffect(() => {
     getAllowedBorrowLimitDetails(address, null).then((data) => {
@@ -66,6 +72,12 @@ const RequestLoanModal = ({ gitcoinScore }) => {
       ],
     });
   };
+  useEffect(() => {
+    if(txReceipt){
+      refetch()
+      onClose()
+    }
+  }, [txReceipt])
   return (
     <>
       <Button onClick={onOpen} marginTop={"12vh"} backgroundColor={"#D2F7A9"}>
@@ -119,7 +131,7 @@ const RequestLoanModal = ({ gitcoinScore }) => {
             </ModalBody>
 
             <ModalFooter>
-              <Button colorScheme="blue" mr={3} onClick={onSubmit}>
+              <Button colorScheme="blue" mr={3} onClick={onSubmit} isLoading={isLoading || txLoading} isDisabled={isLoading}>
                 Submit
               </Button>
               <Button onClick={onClose}>Cancel</Button>

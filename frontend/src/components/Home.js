@@ -23,7 +23,7 @@ import { formatUnits, parseUnits } from "viem";
 const Home = () => {
   const { address, isConnected } = useAccount();
   const { setOpen } = useModal();
-  const { borrowRequestDetails, isLoading } = useGetBorrowRequests();
+  const { borrowRequestDetails, isLoading, refetch } = useGetBorrowRequests();
 
   const [gitcoinScore, setGitcoinScore] = useState(0);
   const [onChainScore, setOnChainScore] = useState(0);
@@ -159,7 +159,7 @@ const Home = () => {
 
       <Flex justifyContent={"space-between"} paddingInline={"20px"}>
         <Heading marginTop={"12vh"}>Welcome</Heading>
-        <RequestLoanModal />
+        <RequestLoanModal refetch={refetch}/>
       </Flex>
       <Flex>
         <Box
@@ -261,12 +261,14 @@ const Home = () => {
                     isLoading={isLoading}
                     filterUser={true}
                     lenderSignatures={lenderSignatures}
+                    refetch={refetch}
                   />
                 </TabPanel>
                 <TabPanel>
                   <BorrowRequestsTable
                     borrowRequestDetails={borrowRequestDetails}
                     isLoading={isLoading}
+                    refetch={refetch}
                   />
                 </TabPanel>
               </TabPanels>

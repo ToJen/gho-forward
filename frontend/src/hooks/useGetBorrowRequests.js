@@ -4,7 +4,7 @@ import GhoSafeAbi from "../abis/ghoSafeContractAbi.json";
 import { useEffect, useState } from "react";
 
 export const useGetBorrowRequests = () => {
-  const { data, isError, isLoading } = useContractRead({
+  const { data, isError, isLoading, refetch } = useContractRead({
     address: GHO_SAFE_SEPOLIA,
     abi: GhoSafeAbi,
     functionName: "getBorrowReqeusts",
@@ -43,5 +43,6 @@ export const useGetBorrowRequests = () => {
   return {
     borrowRequestDetails,
     isLoading: isLoading,
+    refetch: refetch,
   };
 };
