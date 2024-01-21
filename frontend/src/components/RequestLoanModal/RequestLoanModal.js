@@ -83,7 +83,7 @@ const RequestLoanModal = ({ gitcoinScore }) => {
                   Based on your score, your max limit is{" "}
                   {`${borrowLimitDetails.borrowUpto} GHO`}
                 </FormLabel>
-                <FormLabel>Borrow Amount </FormLabel>
+                <FormLabel>Borrow Amount (in GHO)</FormLabel>
                 <Input
                   placeholder={` max. ${borrowLimitDetails.borrowUpto}`}
                   type="number"
